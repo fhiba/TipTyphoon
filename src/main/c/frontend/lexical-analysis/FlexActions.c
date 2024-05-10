@@ -36,16 +36,44 @@ static void _logLexicalAnalyzerContext(const char * functionName, LexicalAnalyze
 
 /* PUBLIC FUNCTIONS */
 
-void BeginMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
-		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+
+Token HeadingLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	Token token;
+	switch (lexicalAnalyzerContext->length) 
+	{
+	case 1:
+		token = HEADING1_BEGIN;
+		break;
+	case 2:
+		token = HEADING2_BEGIN;
+		break;
+	case 3:
+		token = HEADING3_BEGIN;
+		break;
+	case 4:
+		token = HEADING4_BEGIN;
+		break;
+	case 5:
+		token = HEADING5_BEGIN;
+		break;
+	default:
+		token = HEADING6_BEGIN;
+		break;
 	}
+	lexicalAnalyzerContext->semanticValue->token = token;
+	return token;
 }
 
-void EndMultilineCommentLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	if (_logIgnoredLexemes) {
-		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	}
+Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	lexicalAnalyzerContext->semanticValue->string = copyString(lexicalAnalyzerContext->lexeme);
+	return STRING;
+}
+
+Token EndHeadingLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	return HEADING_END;
 }
 
 void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
@@ -54,35 +82,7 @@ void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	}
 }
 
-Token ArithmeticOperatorLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	Token token;
-	switch (lexicalAnalyzerContext->lexeme[0]) {
-		case '-': token = SUB; break;
-		case '*': token = MUL; break;
-		case '/': token = DIV; break;
-		case '+': token = ADD; break;
-	}
-	lexicalAnalyzerContext->semanticValue->token = token;
-	return token;
-}
 
-Token IntegerLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->integer = atoi(lexicalAnalyzerContext->lexeme);
-	return INTEGER;
-}
-
-Token ParenthesisLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	Token token;
-	switch (lexicalAnalyzerContext->lexeme[0]) {
-		case '(': token = OPEN_PARENTHESIS; break;
-		case ')': token = CLOSE_PARENTHESIS; break;
-	}
-	lexicalAnalyzerContext->semanticValue->token = token;
-	return token;
-}
 
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);

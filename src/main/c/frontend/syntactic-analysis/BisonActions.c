@@ -31,50 +31,34 @@ static void _logSyntacticAnalyzerAction(const char * functionName) {
 
 /* PUBLIC FUNCTIONS */
 
-Constant * IntegerConstantSemanticAction(const int value) {
+Block *WordBlockSemanticAction(Word *word, Block *nextBlock) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Constant * constant = calloc(1, sizeof(Constant));
-	constant->value = value;
-	return constant;
+	Block * newBlock = calloc(1, sizeof(Block));
+	if(nextBlock != NULL) {
+		newBlock->type = WORD_BLOCK;
+		newBlock->word = word;
+		newBlock->nextBlock = nextBlock;
+	}
+	else {
+		newBlock->type = WORD;
+		newBlock->word = word;
+	}
+    return newBlock;
 }
 
-Expression * ArithmeticExpressionSemanticAction(Expression * leftExpression, Expression * rightExpression, ExpressionType type) {
+Block *HeadingBlockSemanticAction(Block *block, BlockType type) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Expression * expression = calloc(1, sizeof(Expression));
-	expression->leftExpression = leftExpression;
-	expression->rightExpression = rightExpression;
-	expression->type = type;
-	return expression;
+	Block * newBlock = calloc(1, sizeof(Block));
+	block->type = type;
+	block->childBlock = block;
+	return newBlock;
 }
 
-Expression * FactorExpressionSemanticAction(Factor * factor) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Expression * expression = calloc(1, sizeof(Expression));
-	expression->factor = factor;
-	expression->type = FACTOR;
-	return expression;
-}
-
-Factor * ConstantFactorSemanticAction(Constant * constant) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Factor * factor = calloc(1, sizeof(Factor));
-	factor->constant = constant;
-	factor->type = CONSTANT;
-	return factor;
-}
-
-Factor * ExpressionFactorSemanticAction(Expression * expression) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Factor * factor = calloc(1, sizeof(Factor));
-	factor->expression = expression;
-	factor->type = EXPRESSION;
-	return factor;
-}
-
-Program * ExpressionProgramSemanticAction(CompilerState * compilerState, Expression * expression) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
+Program *ExpressionProgramSemanticAction(CompilerState *compilerState, Block *block)
+{
+    _logSyntacticAnalyzerAction(__FUNCTION__);
 	Program * program = calloc(1, sizeof(Program));
-	program->expression = expression;
+	program->block = block;
 	compilerState->abstractSyntaxtTree = program;
 	if (0 < flexCurrentContext()) {
 		logError(_logger, "The final context is not the default (0): %d", flexCurrentContext());
@@ -84,4 +68,13 @@ Program * ExpressionProgramSemanticAction(CompilerState * compilerState, Express
 		compilerState->succeed = true;
 	}
 	return program;
+}
+
+Word *StringSemanticAction(char *word)
+{
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Word * newWord = calloc(1, sizeof(Word));
+	newWord->word = word;
+
+    return newWord;
 }

@@ -14,64 +14,53 @@ void shutdownAbstractSyntaxTreeModule();
  * This typedefs allows self-referencing types.
  */
 
-typedef enum ExpressionType ExpressionType;
-typedef enum FactorType FactorType;
+typedef enum BlockType BlockType;
 
-typedef struct Constant Constant;
-typedef struct Expression Expression;
-typedef struct Factor Factor;
+typedef struct Word Word;
+typedef struct Block Block;
 typedef struct Program Program;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
-
-enum ExpressionType {
-	ADDITION,
-	DIVISION,
-	FACTOR,
-	MULTIPLICATION,
-	SUBTRACTION
+enum BlockType {
+	HEADING1,
+	HEADING2,
+	HEADING3,
+	HEADING4,
+	HEADING5,
+	HEADING6,
+	WORD,
+	WORD_BLOCK
 };
 
-enum FactorType {
-	CONSTANT,
-	EXPRESSION
+struct Word {
+	char * word;
 };
 
-struct Constant {
-	int value;
-};
 
-struct Factor {
+struct Block {
 	union {
-		Constant * constant;
-		Expression * expression;
-	};
-	FactorType type;
-};
-
-struct Expression {
-	union {
-		Factor * factor;
+		Word * word2;
 		struct {
-			Expression * leftExpression;
-			Expression * rightExpression;
+			Word * word;
+			Block * nextBlock;
 		};
+		Block * childBlock;
 	};
-	ExpressionType type;
+	BlockType type;
 };
+
 
 struct Program {
-	Expression * expression;
+	Block * block;
 };
 
 /**
  * Node recursive destructors.
  */
-void releaseConstant(Constant * constant);
-void releaseExpression(Expression * expression);
-void releaseFactor(Factor * factor);
+void releaseWord(Word * word);
+void releaseBlock(Block * block);
 void releaseProgram(Program * program);
 
 #endif

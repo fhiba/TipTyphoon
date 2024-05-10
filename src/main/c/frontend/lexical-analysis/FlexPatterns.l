@@ -14,7 +14,7 @@
  *
  * @see https://westes.github.io/flex/manual/Start-Conditions.html
  */
-%x MULTILINE_COMMENT
+%x HEADING
 
 /**
  * Reusable patterns.
@@ -25,24 +25,18 @@
 
 %%
 
-"/*"								{ BEGIN(MULTILINE_COMMENT); BeginMultilineCommentLexemeAction(createLexicalAnalyzerContext()); }
-<MULTILINE_COMMENT>"*/"				{ EndMultilineCommentLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
-<MULTILINE_COMMENT>[[:space:]]+		{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-<MULTILINE_COMMENT>[^*]+			{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-<MULTILINE_COMMENT>.				{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
 
-"-"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext()); }
-"*"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext()); }
-"/"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext()); }
-"+"									{ return ArithmeticOperatorLexemeAction(createLexicalAnalyzerContext()); }
 
-"("									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext()); }
-")"									{ return ParenthesisLexemeAction(createLexicalAnalyzerContext()); }
 
-[[:digit:]]+						{ return IntegerLexemeAction(createLexicalAnalyzerContext()); }
+"#+ "                             { return HeadingLexemeAction(createLexicalAnalyzerContext()); BEGIN(HEADING); }
+<HEADING>[^[:space:]]+            { return StringLexemeAction(createLexicalAnalyzerContext()); }
+<HEADING>[[:space:]]+             { return IgnoredLexemAction(createLexicalAnalyzerContext()); }
+<HEADING>"\n"                     { return EndHeadingLexemeAction(createLexicalAnalyzerContext()); BEGIN(INITIAL); }
 
-[[:space:]]+						{ IgnoredLexemeAction(createLexicalAnalyzerContext()); }
-.									{ return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+
+[^[:space:]#]+                    { return StringLexemeAction(createLexicalAnalyzerContext()); }
+[[:space:]]+					  { IgnoredLexemeAction(createLexicalAnalyzerContext()); }
+.								  { return UnknownLexemeAction(createLexicalAnalyzerContext()); }
 
 %%
 

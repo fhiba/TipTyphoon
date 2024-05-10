@@ -9,14 +9,13 @@
 %union {
 	/** Terminals. */
 
-	int integer;
+	char* string;
 	Token token;
 
 	/** Non-terminals. */
 
-	Constant * constant;
-	Expression * expression;
-	Factor * factor;
+	Word * word;
+	Block * block;
 	Program * program;
 }
 
@@ -35,47 +34,36 @@
 */
 
 /** Terminals. */
-%token <integer> INTEGER
-%token <token> ADD
-%token <token> CLOSE_PARENTHESIS
-%token <token> DIV
-%token <token> MUL
-%token <token> OPEN_PARENTHESIS
-%token <token> SUB
+%token <string> STRING;
+%token <token> HEADING1_BEGIN
+%token <token> HEADING2_BEGIN
+%token <token> HEADING3_BEGIN
+%token <token> HEADING4_BEGIN
+%token <token> HEADING5_BEGIN
+%token <token> HEADING6_BEGIN
+%token <token> HEADING_END
 
 %token <token> UNKNOWN
 
 /** Non-terminals. */
-%type <constant> constant
-%type <expression> expression
-%type <factor> factor
+%type <word> word
+%type <block> block
 %type <program> program
-
-/**
- * Precedence and associativity.
- *
- * @see https://www.gnu.org/software/bison/manual/html_node/Precedence.html
- */
-%left ADD SUB
-%left MUL DIV
 
 %%
 
-program: expression													{ $$ = ExpressionProgramSemanticAction(currentCompilerState(), $1); }
+program: block													{ $$ = BlockProgramSemanticAction(currentCompilerState(), $1); }
 	;
 
-expression: expression[left] ADD expression[right]					{ $$ = ArithmeticExpressionSemanticAction($left, $right, ADDITION); }
-	| expression[left] DIV expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, DIVISION); }
-	| expression[left] MUL expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, MULTIPLICATION); }
-	| expression[left] SUB expression[right]						{ $$ = ArithmeticExpressionSemanticAction($left, $right, SUBTRACTION); }
-	| factor														{ $$ = FactorExpressionSemanticAction($1); }
+block: HEADING1_BEGIN block HEADING_END							{ $$ = HeadingBlockSemanticAction( $2, HEADING1); }
+	|HEADING2_BEGIN block HEADING_END							{ $$ = HeadingBlockSemanticAction( $2, HEADING2); }
+	|HEADING3_BEGIN block HEADING_END							{ $$ = HeadingBlockSemanticAction( $2, HEADING3); }
+	|HEADING4_BEGIN block HEADING_END							{ $$ = HeadingBlockSemanticAction( $2, HEADING4); }
+	|HEADING5_BEGIN block HEADING_END							{ $$ = HeadingBlockSemanticAction( $2, HEADING5); }
+	|HEADING6_BEGIN block HEADING_END							{ $$ = HeadingBlockSemanticAction( $2, HEADING6); }
+	|word block													{ $$ = WordBlockSemanticAction( $1, $2); }
+	|word														{ $$ = WordBlockSemanticAction( $1, NULL); }
 	;
-
-factor: OPEN_PARENTHESIS expression CLOSE_PARENTHESIS				{ $$ = ExpressionFactorSemanticAction($2); }
-	| constant														{ $$ = ConstantFactorSemanticAction($1); }
+word: STRING													{ $$ = StringWordSemanticAction($1); }
 	;
-
-constant: INTEGER													{ $$ = IntegerConstantSemanticAction($1); }
-	;
-
 %%

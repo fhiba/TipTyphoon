@@ -16,51 +16,39 @@ void shutdownAbstractSyntaxTreeModule() {
 
 /** PUBLIC FUNCTIONS */
 
-void releaseConstant(Constant * constant) {
+
+
+void releaseWord(Word * word) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (constant != NULL) {
-		free(constant);
+	if (word != NULL) {
+		free(word->word);
+		free(word);
 	}
 }
 
-void releaseExpression(Expression * expression) {
+void releaseBlock(Block * block) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (expression != NULL) {
-		switch (expression->type) {
-			case ADDITION:
-			case DIVISION:
-			case MULTIPLICATION:
-			case SUBTRACTION:
-				releaseExpression(expression->leftExpression);
-				releaseExpression(expression->rightExpression);
-				break;
-			case FACTOR:
-				releaseFactor(expression->factor);
-				break;
+	if (block != NULL) {
+		switch (block->type) {
+		case WORD:
+			releaseWord(block->word);
+			break;
+		case WORD_BLOCK:
+			releaseWord(block->word);
+			releaseBlock(block->nextBlock);
+			break;
+		default:
+			releaseBlock(block->childBlock);
+		break;
 		}
-		free(expression);
-	}
-}
-
-void releaseFactor(Factor * factor) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (factor != NULL) {
-		switch (factor->type) {
-			case CONSTANT:
-				releaseConstant(factor->constant);
-				break;
-			case EXPRESSION:
-				releaseExpression(factor->expression);
-				break;
-		}
-		free(factor);
+		free(block);
 	}
 }
 
 void releaseProgram(Program * program) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (program != NULL) {
-		releaseExpression(program->expression);
+		releaseBlock(program->block);
 		free(program);
 	}
 }
