@@ -15,52 +15,138 @@ void shutdownAbstractSyntaxTreeModule();
  */
 
 typedef enum BlockType BlockType;
+typedef enum MasterBlockType MasterBlockType;
+typedef enum NTInlineType NTInlineType;
+typedef enum TInlineType TInlineType;
+typedef enum StylingType StylingType;
+typedef struct Styling Styling;
 
 typedef struct Word Word;
 typedef struct Block Block;
+typedef struct MasterBlock MasterBlock;
 typedef struct Program Program;
+typedef struct NTInline NTInline;
+typedef struct TInline TInline;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
+
+
+enum StylingType {
+	FF,
+	FS,
+	FC,
+	BC,
+	UC,
+	U,
+	P,
+	S_UNION
+};
+
+enum MasterBlockType {
+	MASTER_BLOCK,
+	MASTER_BLOCK_LIST
+};
+
+
 enum BlockType {
-	HEADING1,
-	HEADING2,
-	HEADING3,
-	HEADING4,
-	HEADING5,
-	HEADING6,
-	WORD,
-	WORD_BLOCK
+	HEADER,
+	SIMPLE,
+	WNL,
+	STYLING
 };
 
-struct Word {
-	char * word;
+
+enum NTInlineType {
+	NT_STRING,
+	NT_INLINE_FIRST,
+	T_INLINE_FIRST,
+	NT_UNION
 };
 
+enum TInlineType {
+	T_STRING,
+	ITALIC,
+	CODE,
+	BOLD,
+	T_UNION
+};
+
+struct NTInline{
+	union{
+		char* string;
+		struct{
+			NTInline * nt_inline;
+			TInline * t_inline;
+		};
+		struct{	
+			NTInline * first;
+			NTInline * second;
+		};
+	};
+	NTInlineType type;
+};
+
+
+
+struct TInline{
+	union{
+		char* string;
+		struct{
+			TInline * first;
+			NTInline * divider;
+			TInline * second;
+		};
+		TInline * child;
+	};
+	TInlineType type;
+};
+
+
+struct Styling {
+	union {
+		char * string;
+		struct {
+			Styling * first;
+			Styling * second;
+		};
+	};
+	StylingType type;
+};
 
 struct Block {
 	union {
-		Word * word2;
-		struct {
-			Word * word;
-			Block * nextBlock;
-		};
+		NTInline * nt_inline;
+		TInline * t_inline;
 		Block * childBlock;
+		Styling * styling;
 	};
 	BlockType type;
 };
 
+struct MasterBlock {
+	union {
+		Block * onlyBlock;
+		struct {
+			Block * block;
+			MasterBlock * nextBlock;
+		};
+	};
+	MasterBlockType type;
+};
 
 struct Program {
-	Block * block;
+	MasterBlock * masterBlock;
 };
 
 /**
  * Node recursive destructors.
  */
-void releaseWord(Word * word);
+void releaseTInline(TInline * tInline);
+void releaseNTInline(NTInline * ntInline);
 void releaseBlock(Block * block);
 void releaseProgram(Program * program);
-
+void releaseMasterBlock(MasterBlock * masterBlock);
+void releaseStyling(Styling * styling);
 #endif

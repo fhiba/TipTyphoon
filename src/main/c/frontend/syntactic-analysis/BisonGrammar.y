@@ -14,9 +14,12 @@
 
 	/** Non-terminals. */
 
-	Word * word;
+	TInline * t_inline;
+	NTInline * nt_inline;
 	Block * block;
 	Program * program;
+	MasterBlock * master_block;
+	Styling * styling;
 }
 
 /**
@@ -35,35 +38,74 @@
 
 /** Terminals. */
 %token <string> STRING;
-%token <token> HEADING1_BEGIN
-%token <token> HEADING2_BEGIN
-%token <token> HEADING3_BEGIN
-%token <token> HEADING4_BEGIN
-%token <token> HEADING5_BEGIN
-%token <token> HEADING6_BEGIN
-%token <token> HEADING_END
+%token <string> WHITESPACE;
+%token <token> HEADER_TOKEN
+%token <token> B_TOKEN
+%token <token> I_TOKEN
+%token <token> C_TOKEN
+%token <string> NO_TOKEN
+%token <token> NEW_LINE
+%token <string> STYLING_VALUE
+%token <token> BEGIN_STYLING
+%token <token> END_STYLING_VALUE
+%token <token> END_STYLING
+%token <token> U_TOKEN
+%token <token> FF_TOKEN
+%token <token> FS_TOKEN
+%token <token> FC_TOKEN
+%token <token> BC_TOKEN
+%token <token> UC_TOKEN
+%token <token> P_TOKEN
+
 
 %token <token> UNKNOWN
 
 /** Non-terminals. */
-%type <word> word
+%type <nt_inline> nt_inline
+%type <t_inline> t_inline
 %type <block> block
 %type <program> program
-
+%type <master_block> master_block
+%type <styling> styling
 %%
 
-program: block													{ $$ = BlockProgramSemanticAction(currentCompilerState(), $1); }
+program: master_block                  {$$ = MasterBlockProgramSemanticAction(currentCompilerState(), $1);}
 	;
 
-block: HEADING1_BEGIN block HEADING_END							{ $$ = HeadingBlockSemanticAction( $2, HEADING1); }
-	|HEADING2_BEGIN block HEADING_END							{ $$ = HeadingBlockSemanticAction( $2, HEADING2); }
-	|HEADING3_BEGIN block HEADING_END							{ $$ = HeadingBlockSemanticAction( $2, HEADING3); }
-	|HEADING4_BEGIN block HEADING_END							{ $$ = HeadingBlockSemanticAction( $2, HEADING4); }
-	|HEADING5_BEGIN block HEADING_END							{ $$ = HeadingBlockSemanticAction( $2, HEADING5); }
-	|HEADING6_BEGIN block HEADING_END							{ $$ = HeadingBlockSemanticAction( $2, HEADING6); }
-	|word block													{ $$ = WordBlockSemanticAction( $1, $2); }
-	|word														{ $$ = WordBlockSemanticAction( $1, NULL); }
+
+master_block: block						{$$ = MasterBlockSemanticAction($1, NULL, MASTER_BLOCK);}
+            | block master_block		{$$ = MasterBlockSemanticAction($1, $2, MASTER_BLOCK_LIST);}
 	;
-word: STRING													{ $$ = StringWordSemanticAction($1); }
+
+
+styling: FS_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, FS);}
+	| FF_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, FF);}
+	| FC_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, FC);}
+	| BC_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, BC);}
+	| UC_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, UC);}
+	| U_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, U);}
+	| P_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, P);}
+	| styling styling 								{$$ = UnionStylingSemanticAction($1, $2);}
 	;
+block: HEADER_TOKEN block						{$$ = HeaderBlockSemanticAction($2);}
+    | t_inline 									{$$ = TSimpleBlockSemanticAction($1);}
+    | nt_inline 								{$$ = NTSimpleBlockSemanticAction($1);}
+	| BEGIN_STYLING styling END_STYLING			{$$ = StylingBlockSemanticAction($2);}
+	| block NEW_LINE							{$$ = WNLBlockSemanticAction($1);}
+	;
+
+
+t_inline: STRING							{$$ = TStringSemanticAction($1);}
+        | t_inline nt_inline t_inline		{$$ = UnionSemanticAction($1,$2,$3);}
+    	| B_TOKEN t_inline B_TOKEN			{$$ = TInlineSemanticAction($2,BOLD);}
+     	| I_TOKEN t_inline I_TOKEN			{$$ = TInlineSemanticAction($2,ITALIC);}
+    	| C_TOKEN t_inline C_TOKEN			{$$ = TInlineSemanticAction($2,CODE);}
+    ;
+
+nt_inline: WHITESPACE						{$$ = NTStringSemanticAction($1);}
+	    | NO_TOKEN							{$$ = NTStringSemanticAction($1);}
+		| nt_inline nt_inline				{$$ = appendUnionSemanticAction($1,$2);}
+        | t_inline nt_inline				{$$ = appendTSemanticAction($1,$2);}
+        | nt_inline t_inline                {$$ = appendNTSemanticAction($1,$2);}
+    ;
 %%

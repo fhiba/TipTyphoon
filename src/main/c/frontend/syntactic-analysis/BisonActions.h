@@ -18,9 +18,23 @@ void shutdownBisonActionsModule();
  * Bison semantic actions.
  */
 
-Block * WordBlockSemanticAction(Word * word, Block * nextBlock);
-Block * HeadingBlockSemanticAction(Block * block, BlockType type);
-Program * ExpressionProgramSemanticAction(CompilerState * compilerState, Block * block);
-Word * StringSemanticAction(char * word);
 
+
+
+Program * MasterBlockProgramSemanticAction(CompilerState * compilerState, MasterBlock * block);
+MasterBlock * MasterBlockSemanticAction(Block * block, MasterBlock * nextBlock, MasterBlockType type);
+TInline * TStringSemanticAction(char * string);
+TInline * TInlineSemanticAction(TInline * tInline, TInlineType type);
+TInline * UnionSemanticAction(TInline * first, NTInline * middle, TInline * last);
+NTInline * NTStringSemanticAction(char * string);
+NTInline * appendUnionSemanticAction(NTInline * first, NTInline * second);
+NTInline * appendTSemanticAction(TInline * first, NTInline * second);
+NTInline * appendNTSemanticAction(NTInline * first, TInline * second);
+Block * HeaderBlockSemanticAction(Block * block);
+Block * TSimpleBlockSemanticAction(TInline * tInline);
+Block * NTSimpleBlockSemanticAction(NTInline * ntInline);
+Block * WNLBlockSemanticAction(Block * block);
+Block * StylingBlockSemanticAction(Styling * block);
+Styling * UnionStylingSemanticAction(Styling * first, Styling * second);
+Styling * StylingSemanticAction(char * string, StylingType type);
 #endif
