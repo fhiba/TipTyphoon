@@ -1,6 +1,11 @@
 #include "FlexActions.h"
 
 /* MODULE INTERNAL STATE */
+#define H1 2
+#define H2 3
+#define H3 4
+#define H4 5
+#define H5 6
 
 static Logger * _logger = NULL;
 static boolean _logIgnoredLexemes = true;
@@ -36,40 +41,41 @@ static void _logLexicalAnalyzerContext(const char * functionName, LexicalAnalyze
 
 /* PUBLIC FUNCTIONS */
 
-/*
-Token HeadingLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+Token WhitespaceLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext){
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	Token token;
-	switch (lexicalAnalyzerContext->length) 
-	{
-	case 1:
-		token = HEADING1_BEGIN;
-		break;
-	case 2:
-		token = HEADING2_BEGIN;
-		break;
-	case 3:
-		token = HEADING3_BEGIN;
-		break;
-	case 4:
-		token = HEADING4_BEGIN;
-		break;
-	case 5:
-		token = HEADING5_BEGIN;
-		break;
-	default:
-		token = HEADING6_BEGIN;
-		break;
-	}
-	lexicalAnalyzerContext->semanticValue->token = token;
-	return token;
+	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
+	return WS;
 }
-*/
+
 
 Token HeadingLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->token = HEADER_TOKEN;
-	return HEADER_TOKEN;
+	Token token;
+	switch (lexicalAnalyzerContext->length)
+	{
+	case H1:
+		token = H1_TOKEN;
+		break;
+	case H2:
+		token = H2_TOKEN;
+		break;
+	case H3:
+		token = H3_TOKEN;
+		break;
+	case H4:
+		token = H4_TOKEN;
+		break;
+	case H5:
+		token = H5_TOKEN;
+		break;
+	default:
+		token = H6_TOKEN;
+		break;
+	}
+	
+	
+	lexicalAnalyzerContext->semanticValue->token = token;
+	return token;
 }
 
 void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
@@ -79,12 +85,6 @@ void IgnoredLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 Token UnknownLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	return UNKNOWN;
-}
-
-Token WhitespaceLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
-	return WHITESPACE;
 }
 
 Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
@@ -105,9 +105,6 @@ Token TokenLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext){
 	case '*':
 		newToken = B_TOKEN;
 		break;
-	default:
-		return NoTokenLexemeAction(lexicalAnalyzerContext);
-		break;
 	}
 
 	lexicalAnalyzerContext->semanticValue->token = newToken;
@@ -115,19 +112,28 @@ Token TokenLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext){
 
 }
 
-Token NoTokenLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext){
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	lexicalAnalyzerContext->semanticValue->string = lexicalAnalyzerContext->lexeme;
-	return NO_TOKEN;
-}
 
-Token NewlineLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext){
-	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	
-	lexicalAnalyzerContext->semanticValue->token = NEW_LINE;
-	return NEW_LINE;
-}
 
+Token ListLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext){
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	Token token;
+	int tabCount = 0;
+	for(int i = 0; i < lexicalAnalyzerContext->length && (lexicalAnalyzerContext->lexeme[i] == ' ' || lexicalAnalyzerContext->lexeme[i] == '\t'); ++i) {
+		if(lexicalAnalyzerContext->lexeme[i] == ' ' && tabCount % 4 == 0){
+			tabCount++;
+		} else if(lexicalAnalyzerContext->lexeme[i] == '\t'){
+			tabCount++;
+		}
+	}
+	int length = lexicalAnalyzerContext->length -2;
+	if(lexicalAnalyzerContext->lexeme[length] == '-') {
+		token = UNORDERED_LIST;
+	} else {
+		token = ORDERED_LIST;
+	}
+	lexicalAnalyzerContext->semanticValue->integer = tabCount;
+	return token;
+}
 
 Token StylingValueLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
@@ -195,4 +201,28 @@ Token EndStylingLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext){
 		_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	lexicalAnalyzerContext->semanticValue->token = END_STYLING;
 	return END_STYLING;
+}
+
+
+Token BeginLinkLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	int  length = lexicalAnalyzerContext->length - 4;
+	char * helper = calloc(length, sizeof(char));
+	for(int i = 1; i < length; ++i) {
+		helper[i-1] = lexicalAnalyzerContext->lexeme[i];
+	}
+	lexicalAnalyzerContext->semanticValue->string = helper;
+	return START_LINK;	
+}
+
+Token EndLinkLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	lexicalAnalyzerContext->semanticValue->token = END_LINK;
+	return END_LINK;
+}
+ 
+Token BlockquoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext){
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	lexicalAnalyzerContext->semanticValue->token = BLOCKQUOTE_TOKEN;
+	return BLOCKQUOTE_TOKEN;
 }

@@ -8,18 +8,20 @@
 
 %union {
 	/** Terminals. */
-
+	int integer;
 	char* string;
 	Token token;
 
 	/** Non-terminals. */
 
-	TInline * t_inline;
-	NTInline * nt_inline;
+	Text * text;
 	Block * block;
 	Program * program;
 	MasterBlock * master_block;
 	Styling * styling;
+	Inner * inner;
+	List * list;
+	Sublist * sublist;
 }
 
 /**
@@ -38,13 +40,15 @@
 
 /** Terminals. */
 %token <string> STRING;
-%token <string> WHITESPACE;
-%token <token> HEADER_TOKEN
+%token <token> H1_TOKEN
+%token <token> H2_TOKEN
+%token <token> H3_TOKEN
+%token <token> H4_TOKEN
+%token <token> H5_TOKEN
+%token <token> H6_TOKEN
 %token <token> B_TOKEN
 %token <token> I_TOKEN
 %token <token> C_TOKEN
-%token <string> NO_TOKEN
-%token <token> NEW_LINE
 %token <string> STYLING_VALUE
 %token <token> BEGIN_STYLING
 %token <token> END_STYLING_VALUE
@@ -56,25 +60,32 @@
 %token <token> BC_TOKEN
 %token <token> UC_TOKEN
 %token <token> P_TOKEN
+%token <string> WS
+%token <integer> UNORDERED_LIST
+%token <integer> ORDERED_LIST
+%token <string> START_LINK
+%token <token> END_LINK
+%token <token> BLOCKQUOTE_TOKEN
 
 
 %token <token> UNKNOWN
 
 /** Non-terminals. */
-%type <nt_inline> nt_inline
-%type <t_inline> t_inline
+%type <text> text
 %type <block> block
 %type <program> program
 %type <master_block> master_block
 %type <styling> styling
+%type <inner> inner
+%type <list> list
 %%
 
 program: master_block                  {$$ = MasterBlockProgramSemanticAction(currentCompilerState(), $1);}
 	;
 
 
-master_block: block						{$$ = MasterBlockSemanticAction($1, NULL, MASTER_BLOCK);}
-            | block master_block		{$$ = MasterBlockSemanticAction($1, $2, MASTER_BLOCK_LIST);}
+master_block: block						{$$ = MasterBlockSemanticAction($1);}
+            | master_block block	    {$$ = UnionMasterBlockSemanticAction($1, $2);}
 	;
 
 
@@ -87,25 +98,33 @@ styling: FS_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction(
 	| P_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, P);}
 	| styling styling 								{$$ = UnionStylingSemanticAction($1, $2);}
 	;
-block: HEADER_TOKEN block						{$$ = HeaderBlockSemanticAction($2);}
-    | t_inline 									{$$ = TSimpleBlockSemanticAction($1);}
-    | nt_inline 								{$$ = NTSimpleBlockSemanticAction($1);}
+	
+block:  H1_TOKEN inner							{$$ = HeaderBlockSemanticAction($2,1);}
+	| H2_TOKEN inner    						{$$ = HeaderBlockSemanticAction($2,2);}
+	| H3_TOKEN inner							{$$ = HeaderBlockSemanticAction($2,3);}
+	| H4_TOKEN inner	    					{$$ = HeaderBlockSemanticAction($2,4);}
+	| H5_TOKEN inner 							{$$ = HeaderBlockSemanticAction($2,5);}
+	| H6_TOKEN inner 							{$$ = HeaderBlockSemanticAction($2,6);}
 	| BEGIN_STYLING styling END_STYLING			{$$ = StylingBlockSemanticAction($2);}
-	| block NEW_LINE							{$$ = WNLBlockSemanticAction($1);}
+	| BLOCKQUOTE_TOKEN inner					{$$ = BlockquoteBlockSemanticAction($2);}
+	| inner                                     {$$ = TextBlockSemanticAction($1);}
+	| list                                      {$$ = ListBlockSemanticAction($1);}
 	;
 
 
-t_inline: STRING							{$$ = TStringSemanticAction($1);}
-        | t_inline nt_inline t_inline		{$$ = UnionSemanticAction($1,$2,$3);}
-    	| B_TOKEN t_inline B_TOKEN			{$$ = TInlineSemanticAction($2,BOLD);}
-     	| I_TOKEN t_inline I_TOKEN			{$$ = TInlineSemanticAction($2,ITALIC);}
-    	| C_TOKEN t_inline C_TOKEN			{$$ = TInlineSemanticAction($2,CODE);}
-    ;
+list: ORDERED_LIST inner							{$$ = ListSemanticAction($1, $2, OL);}
+	| UNORDERED_LIST inner						    {$$ = ListSemanticAction($1, $2, UL);}
+	;
 
-nt_inline: WHITESPACE						{$$ = NTStringSemanticAction($1);}
-	    | NO_TOKEN							{$$ = NTStringSemanticAction($1);}
-		| nt_inline nt_inline				{$$ = appendUnionSemanticAction($1,$2);}
-        | t_inline nt_inline				{$$ = appendTSemanticAction($1,$2);}
-        | nt_inline t_inline                {$$ = appendNTSemanticAction($1,$2);}
-    ;
+
+inner: text										{$$ = TextInnerSemanticAction($1);}
+	;
+
+text: text WS text                              {$$ = UnionTextSemanticAction($1, $2, $3);}
+	| STRING 									{$$ = TextSemanticAction($1);}
+	| START_LINK STRING END_LINK                {$$ = LinkSemanticAction($1,$2);}
+	| B_TOKEN text B_TOKEN						{$$ = FormatTextSemanticAction($2, BOLD);}
+	| I_TOKEN text I_TOKEN						{$$ = FormatTextSemanticAction($2, ITALIC);}
+	| C_TOKEN text C_TOKEN						{$$ = FormatTextSemanticAction($2, CODE);}
+	;
 %%

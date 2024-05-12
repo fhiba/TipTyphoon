@@ -16,70 +16,41 @@ void shutdownAbstractSyntaxTreeModule() {
 
 /** PUBLIC FUNCTIONS */
 
-void releaseTInline(TInline * tInline){
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if(tInline != NULL){
-		switch (tInline->type)
-		{
-		case T_UNION:
-			releaseTInline(tInline->first);
-			releaseTInline(tInline->second);
-			break;
-		case T_STRING:
-			free(tInline->string);
-			break;
-		case CODE:
-		case ITALIC:
-		case BOLD:
-			releaseTInline(tInline->child);
-			break;
-		}
-		free(tInline);
-	}
-}
 
-
-void releaseNTInline(NTInline * ntInline) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (ntInline != NULL) {
-		switch (ntInline->type) {
-		case NT_STRING:
-			free(ntInline->string);
-			break;
-		case T_INLINE_FIRST:
-		case NT_INLINE_FIRST:
-			releaseNTInline(ntInline->nt_inline);
-			releaseTInline(ntInline->t_inline);
-			break;
-		case NT_UNION:
-			releaseNTInline(ntInline->first);
-			releaseNTInline(ntInline->second);
-			break;
-		}
-		free(ntInline);
-	}
-}
 
 
 void releaseBlock(Block * block) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (block != NULL) {
 		switch (block->type) {
-		case WNL:
-		case HEADER:
-			releaseBlock(block->childBlock);
-			break;
+		case H1:
+		case H2:
+		case H3:
+		case H4:
+		case H5:
+		case H6:
+		case BQ:
 		case SIMPLE:
-			if(block->t_inline == NULL)
-				releaseNTInline(block->nt_inline);
-			else
-				releaseTInline(block->t_inline);
+			releaseInner(block->inner);
 			break;
 		case STYLING:
 			releaseStyling(block->styling);
 			break;
+		case LIST:
+			releaseList(block->list);
+			break;
+		default:
+			break;
 		}
 		free(block);
+	}
+}
+
+void releaseInner(Inner * inner) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (inner != NULL) {
+		releaseText(inner->text);
+		free(inner);
 	}
 }
 
@@ -95,10 +66,10 @@ void releaseMasterBlock(MasterBlock * masterBlock) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (masterBlock != NULL) {
 		if(masterBlock->type == MASTER_BLOCK_LIST){
-			releaseBlock(masterBlock->block);
-			releaseMasterBlock(masterBlock->nextBlock);
+			releaseMasterBlock(masterBlock->first);
+			releaseBlock(masterBlock->second);
 		} else {
-			releaseBlock(masterBlock->onlyBlock);
+			releaseBlock(masterBlock->block);
 		}
 		free(masterBlock);
 	}
@@ -114,13 +85,64 @@ void releaseStyling(Styling * styling) {
 		case BC:
 		case UC:
 		case U:
-			free(styling->string);
+			releaseStr(styling->string);
 			break;
 		case S_UNION:
 			releaseStyling(styling->first);
 			releaseStyling(styling->second);
 			break;
+		default:
+			break;
 		}
 		free(styling);
+	}
+}
+void releaseText(Text * text) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (text != NULL) {
+		switch (text->type) {
+		case TEXT:
+			releaseStr(text->string);
+			break;
+		case UNION:
+			releaseText(text->left);
+			releaseStr(text->ws);
+			releaseText(text->right);
+			break;
+		case BOLD:
+		case ITALIC:
+		case CODE:
+			releaseText(text->child);
+			break;
+		case LINK:
+			releaseLink(text->link);
+			break;
+		default:
+			break;
+		}
+		free(text);
+	}
+}
+void releaseStr(char * string) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (string != NULL) {
+		free(string);
+	}
+}
+
+void releaseList(List * list) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (list != NULL) {
+		releaseInner(list->content);
+		free(list);
+	}
+}
+
+void releaseLink(Link * link) {
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (link != NULL) {
+		releaseStr(link->string);
+		releaseStr(link->link);
+		free(link);
 	}
 }

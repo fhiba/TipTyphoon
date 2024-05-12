@@ -46,53 +46,58 @@ Program * MasterBlockProgramSemanticAction(CompilerState * compilerState, Master
 	return program;
 }
 
-MasterBlock * MasterBlockSemanticAction(Block * block, MasterBlock * masterBlock, MasterBlockType type) {
+MasterBlock * MasterBlockSemanticAction(Block * block) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	MasterBlock * newMasterBlock = calloc(1, sizeof(MasterBlock));
-	if(type == MASTER_BLOCK_LIST) {
-		newMasterBlock->block = block;
-		newMasterBlock->nextBlock = masterBlock;
-		newMasterBlock->type = MASTER_BLOCK_LIST;
-	} else {
-		newMasterBlock->onlyBlock = block;
-		newMasterBlock->type = MASTER_BLOCK;
-	}
-
+	newMasterBlock->block = block;
+	newMasterBlock->type = MASTER_BLOCK;
+	return newMasterBlock;
+}
+MasterBlock * UnionMasterBlockSemanticAction(MasterBlock * first, Block * second) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	MasterBlock * newMasterBlock = calloc(1, sizeof(MasterBlock));
+	newMasterBlock->type = MASTER_BLOCK_LIST;
+	newMasterBlock->first = first;
+	newMasterBlock->second = second;
 	return newMasterBlock;
 }
 
-Block * HeaderBlockSemanticAction(Block * block) {
+Block * HeaderBlockSemanticAction(Inner * inner, int number) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Block * newBlock = calloc(1, sizeof(Block));
-	newBlock->childBlock = block;
-	newBlock->type = HEADER;
+	newBlock->inner = inner;
+	switch (number)
+	{
+	case 1:
+		newBlock->type = H1;
+		break;
+	case 2:
+		newBlock->type = H2;
+		break;
+	case 3:
+		newBlock->type = H3;
+		break;
+	case 4:
+		newBlock->type = H4;
+		break;
+	case 5:
+		newBlock->type = H5;
+		break;
+	default:
+		newBlock->type = H6;
+		break;
+	}
 	return newBlock;
 }
 
-Block * TSimpleBlockSemanticAction(TInline * tInline){
+Block * TextBlockSemanticAction(Inner * inner){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Block * newBlock = calloc(1, sizeof(Block));
-	newBlock->t_inline = tInline;
-	newBlock->type = SIMPLE;
+	newBlock->inner = inner;
+	newBlock->type = TEXT;
 	return newBlock;
 }
 
-Block * NTSimpleBlockSemanticAction(NTInline * ntInline){
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Block * newBlock = calloc(1, sizeof(Block));
-	newBlock->nt_inline = ntInline;
-	newBlock->type = SIMPLE;
-	return newBlock;
-}
-
-
-Block * WNLBlockSemanticAction(Block * block) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Block * newBlock = calloc(1, sizeof(Block));
-	newBlock->childBlock = block;
-	newBlock->type = WNL;
-	return newBlock;
-}
 
 Block * StylingBlockSemanticAction(Styling * styling) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
@@ -100,68 +105,6 @@ Block * StylingBlockSemanticAction(Styling * styling) {
 	newBlock->styling = styling;
 	newBlock->type = STYLING;
 	return newBlock;
-}
-
-TInline * TStringSemanticAction(char * string){
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	TInline * out = calloc(1,sizeof(TInline));
-	out->type = T_STRING;
-	out->string = string;
-	return out;
-}
-
-TInline * TInlineSemanticAction(TInline * tInline, TInlineType type){
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	TInline * out = calloc(1,sizeof(TInline));
-	out->type = type;
-	out->child = tInline;
-	return out;
-}
-
-TInline * UnionSemanticAction(TInline * first, NTInline * middle, TInline * last){
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	TInline * out = calloc(1,sizeof(TInline));
-	out->type = T_UNION;
-	out->first = first;
-	out->divider = middle;
-	out->second = last;
-	return out;
-}
-
-NTInline * NTStringSemanticAction(char * string) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	NTInline * out = calloc(1, sizeof(NTInline));
-	out->type = NT_STRING;
-	out->string = string;
-	return out;
-
-}
-
-NTInline * appendUnionSemanticAction(NTInline * first, NTInline * second) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	NTInline * out = calloc(1, sizeof(NTInline));
-	out->type = NT_UNION;
-	out->first = first;
-	out->second = second;
-	return out;
-}
-
-NTInline * appendTSemanticAction(TInline * first, NTInline * second) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	NTInline * out = calloc(1, sizeof(NTInline));
-	out->type = T_INLINE_FIRST;
-	out->t_inline = first;
-	out->nt_inline = second;
-	return out;
-}
-
-NTInline * appendNTSemanticAction(NTInline * first, TInline * second) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	NTInline * out = calloc(1, sizeof(NTInline));
-	out->type = NT_INLINE_FIRST;
-	out->t_inline = second;
-	out->nt_inline = first;
-	return out;
 }
 
 
@@ -181,4 +124,77 @@ Styling * StylingSemanticAction(char * string, StylingType type) {
 	out->type = type;
 	out->string = string;
 	return out;
+}
+
+
+
+Text * TextSemanticAction(char * string){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Text * text = calloc(1, sizeof(Text));
+	text->string = string;
+	text->type = TEXT;
+	return text;
+}
+
+Text * UnionTextSemanticAction(Text * left, char * ws, Text * right) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Text * out = calloc(1, sizeof(Text));
+	out->type = UNION;
+	out->left = left;
+	out->ws = ws;
+	out->right = right;
+	return out;
+}
+
+Inner * TextInnerSemanticAction(Text * text) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Inner * inner = calloc(1, sizeof(Inner));
+	inner->text = text;
+	return inner;
+}
+
+
+Text * FormatTextSemanticAction(Text * text, TextType type) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Text * newText = calloc(1, sizeof(Text));
+	newText->type = type;
+	newText->child = text;
+	return newText;
+}
+
+List * ListSemanticAction(int tabCount, Inner * inner, ListType type){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	List * list = calloc(1, sizeof(List));
+	list->content = inner;
+	list->tabCount = tabCount;
+	list->type = type;
+	return list;
+}
+
+
+Block * ListBlockSemanticAction(List * list) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Block * newBlock = calloc(1, sizeof(Block));
+	newBlock->list = list;
+	newBlock->type = LIST;
+	return newBlock;
+}
+
+Text * LinkSemanticAction(char * string, char * link){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Text * text = calloc(1, sizeof(Text));
+	Link * newLink = calloc(1, sizeof(Link));
+	newLink->string = string;
+	newLink->link = link;
+	text->type = LINK;
+	text->link = newLink;	
+	return text;
+}
+
+Block * BlockquoteBlockSemanticAction(Inner * inner) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Block * newBlock = calloc(1, sizeof(Block));
+	newBlock->inner = inner;
+	newBlock->type = BQ;
+	return newBlock;
 }

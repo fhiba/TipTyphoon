@@ -16,11 +16,18 @@ void shutdownAbstractSyntaxTreeModule();
 
 typedef enum BlockType BlockType;
 typedef enum MasterBlockType MasterBlockType;
-typedef enum NTInlineType NTInlineType;
-typedef enum TInlineType TInlineType;
 typedef enum StylingType StylingType;
-typedef struct Styling Styling;
+typedef enum SublistType SublistType;
+typedef enum ListType ListType;
+typedef enum TextType TextType;
 
+
+typedef struct Inner Inner;
+typedef struct Text Text;
+typedef struct Link Link;
+typedef struct Sublist Sublist;
+typedef struct List List;
+typedef struct Styling Styling;
 typedef struct Word Word;
 typedef struct Block Block;
 typedef struct MasterBlock MasterBlock;
@@ -49,58 +56,38 @@ enum MasterBlockType {
 	MASTER_BLOCK_LIST
 };
 
+enum ListType{
+	UL,
+	OL
+};
+
 
 enum BlockType {
-	HEADER,
+	H1,
+	H2,
+	H3,
+	H4,
+	H5,
+	H6,
+	BQ,
+	LIST,
 	SIMPLE,
-	WNL,
 	STYLING
 };
 
-
-enum NTInlineType {
-	NT_STRING,
-	NT_INLINE_FIRST,
-	T_INLINE_FIRST,
-	NT_UNION
-};
-
-enum TInlineType {
-	T_STRING,
+enum TextType {
+	TEXT,
+	UNION,
+	BOLD,
 	ITALIC,
 	CODE,
-	BOLD,
-	T_UNION
+	LINK
 };
 
-struct NTInline{
-	union{
-		char* string;
-		struct{
-			NTInline * nt_inline;
-			TInline * t_inline;
-		};
-		struct{	
-			NTInline * first;
-			NTInline * second;
-		};
-	};
-	NTInlineType type;
-};
-
-
-
-struct TInline{
-	union{
-		char* string;
-		struct{
-			TInline * first;
-			NTInline * divider;
-			TInline * second;
-		};
-		TInline * child;
-	};
-	TInlineType type;
+struct List{
+	Inner * content;
+	int tabCount;
+	ListType type;
 };
 
 
@@ -115,22 +102,25 @@ struct Styling {
 	StylingType type;
 };
 
+struct Inner {
+	Text * text;
+};
+
 struct Block {
 	union {
-		NTInline * nt_inline;
-		TInline * t_inline;
-		Block * childBlock;
+		Inner * inner;
 		Styling * styling;
+		List * list;
 	};
 	BlockType type;
 };
 
 struct MasterBlock {
 	union {
-		Block * onlyBlock;
+		Block * block;
 		struct {
-			Block * block;
-			MasterBlock * nextBlock;
+			MasterBlock * first;
+			Block * second;
 		};
 	};
 	MasterBlockType type;
@@ -139,14 +129,35 @@ struct MasterBlock {
 struct Program {
 	MasterBlock * masterBlock;
 };
+struct Text {
+	union{
+		char * string;
+		struct {
+			Text * left;
+			char * ws;
+			Text * right;
+		};
+		Text * child;
+		Link * link;
+	};
+	TextType type;
+};
+
+struct Link {
+	char * string;
+	char * link;
+};
 
 /**
  * Node recursive destructors.
  */
-void releaseTInline(TInline * tInline);
-void releaseNTInline(NTInline * ntInline);
 void releaseBlock(Block * block);
 void releaseProgram(Program * program);
 void releaseMasterBlock(MasterBlock * masterBlock);
 void releaseStyling(Styling * styling);
+void releaseText(Text * text);
+void releaseInner(Inner * inner);
+void releaseStr(char * str);
+void releaseList(List * list);
+void releaseLink(Link * link);
 #endif

@@ -22,15 +22,9 @@ void shutdownFlexActionsModule();
  */
 
 
-Token NewlineLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-
 Token StringLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
-Token WhitespaceLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-
 Token TokenLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
-
-Token NoTokenLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 Token HeadingLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
@@ -59,4 +53,15 @@ Token EndStylingValueLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContex
 Token EndStylingLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 Token BeginStylingLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+Token WhitespaceLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+Token ListLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+Token BeginLinkLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+Token EndLinkLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
+Token BlockquoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
+
 #endif

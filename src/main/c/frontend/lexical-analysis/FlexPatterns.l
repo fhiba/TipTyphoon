@@ -14,7 +14,7 @@
 %x styling_position
 %x styling_size
 %x styling_ff
-%x comment
+%x hyper
 /**
  * Flex contexts (a.k.a. start conditions).
  *
@@ -27,14 +27,15 @@
  * @see https://westes.github.io/flex/manual/Patterns.html
  */
 nl      \n
-TI      _
-TB      \*
-token_class      [_\*]
-token           (_|\*)
-no_token        {token}[[:space:]]{-}[\n]+
-whitespace      [[:space:]]+
-string         ([[:graph:]]{-}[_\*])+|(([[:graph:]]{-}[_\*])+[[:space:]]+([[:graph:]]{-}[_\*])+)
-TH     "# "
+token_class      [_\*`]
+token           (_|\*|`)
+escaped_token  \\(\\\\)*[_\*`]
+string         (([[:graph:]]{-}[_\*`])|{escaped_token})+
+whitespace [[:space:]]{-}[\n]+
+TB >
+TH     #+" "
+TL -" "
+TOL [0-9]+". "
 TipStyling "[//]: # \"#"
 comment "[comment]:"
 TSuc uc:
@@ -51,9 +52,11 @@ TSsize [0-9]+px
 TSend ";"
 TSstring \"([[:alnum:]]{+}[ ])+\"
 %%
-^{comment}                                                                 {BEGIN(comment); IgnoredLexemeAction(createLexicalAnalyzerContext());}
-<comment>.*(\n)?                                                           {BEGIN(INITIAL); IgnoredLexemeAction(createLexicalAnalyzerContext());}
 
+^{TB}                                                                       {return BlockquoteLexemeAction(createLexicalAnalyzerContext());}                                
+^"    "+{TOL}|(\t)+{TOL}|{TOL}                                              {return ListLexemeAction(createLexicalAnalyzerContext());}   
+^"    "+{TL}|(\t)+{TL}|{TL}                                                 {return ListLexemeAction(createLexicalAnalyzerContext());}
+^{comment}.*$                                                               {IgnoredLexemeAction(createLexicalAnalyzerContext());}
 ^{TipStyling}                                                               {BEGIN(styling); return BeginStylingLexemeAction(createLexicalAnalyzerContext());}
 <styling>{TSuc}                                                             {BEGIN(styling_color); return UCTokenLexemeAction(createLexicalAnalyzerContext());}
 <styling>{TSbg}                                                             {BEGIN(styling_color); return BCTokenLexemeAction(createLexicalAnalyzerContext());}
@@ -84,15 +87,17 @@ TSstring \"([[:alnum:]]{+}[ ])+\"
 <styling_size>.                                                             {return UnknownLexemeAction(createLexicalAnalyzerContext());}
 <styling_position>.                                                         {return UnknownLexemeAction(createLexicalAnalyzerContext());}
 <styling_color>.                                                            {return UnknownLexemeAction(createLexicalAnalyzerContext());}
-
-
-{TH}                                                                        {return HeadingLexemeAction(createLexicalAnalyzerContext());}
-{nl}                                                                        {return NewlineLexemeAction(createLexicalAnalyzerContext());}
-{whitespace}                                                                {return WhitespaceLexemeAction(createLexicalAnalyzerContext());}
+^"> "                                                                       {return BlockquoteLexemeAction(createLexicalAnalyzerContext());}
+\[([[:space:]]{-}[\n]|{string})+\]"( "                                       {BEGIN(hyper);return BeginLinkLexemeAction(createLexicalAnalyzerContext());}
+<hyper>"http"("s")?"://"[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}("/"[^\s]*)?|#([[:graph:]]{-}[[:upper:][:space:]])+         {return StringLexemeAction(createLexicalAnalyzerContext());}
+<hyper>" )"                                                                  {BEGIN(INITIAL);return EndLinkLexemeAction(createLexicalAnalyzerContext());}
+{nl}                                                                        {IgnoredLexemeAction(createLexicalAnalyzerContext());}
+^{TH}                                                                       {return HeadingLexemeAction(createLexicalAnalyzerContext());}
 {string}                                                                    {return StringLexemeAction(createLexicalAnalyzerContext()); }
-{no_token}                                                                  {return NoTokenLexemeAction(createLexicalAnalyzerContext()); }
+{whitespace}                                                                {return WhitespaceLexemeAction(createLexicalAnalyzerContext()); }
 {token}                                                                     {return TokenLexemeAction(createLexicalAnalyzerContext()); }
-.								                                            {return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+.                                                                           {return UnknownLexemeAction(createLexicalAnalyzerContext()); }
+
 
 %%
 /*EOF RULEEEE*/
