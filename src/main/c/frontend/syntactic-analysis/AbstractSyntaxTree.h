@@ -21,8 +21,6 @@ typedef enum SublistType SublistType;
 typedef enum ListType ListType;
 typedef enum TextType TextType;
 
-
-typedef struct Inner Inner;
 typedef struct Text Text;
 typedef struct Link Link;
 typedef struct Sublist Sublist;
@@ -34,6 +32,7 @@ typedef struct MasterBlock MasterBlock;
 typedef struct Program Program;
 typedef struct NTInline NTInline;
 typedef struct TInline TInline;
+typedef struct StylingBlock StylingBlock;
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
@@ -47,8 +46,7 @@ enum StylingType {
 	BC,
 	UC,
 	U,
-	P,
-	S_UNION
+	P
 };
 
 enum MasterBlockType {
@@ -84,32 +82,32 @@ enum TextType {
 	LINK
 };
 
+struct StylingBlock {
+	union{
+		struct{
+			StylingBlock * block;
+			Styling * styling;
+		};
+		Styling * style;
+	};
+};
+
 struct List{
-	Inner * content;
+	Text * content;
 	int tabCount;
 	ListType type;
 };
 
 
 struct Styling {
-	union {
-		char * string;
-		struct {
-			Styling * first;
-			Styling * second;
-		};
-	};
+	char * string;
 	StylingType type;
-};
-
-struct Inner {
-	Text * text;
 };
 
 struct Block {
 	union {
-		Inner * inner;
-		Styling * styling;
+		Text * text;
+		StylingBlock * styling;
 		List * list;
 	};
 	BlockType type;
@@ -154,9 +152,10 @@ struct Link {
 void releaseBlock(Block * block);
 void releaseProgram(Program * program);
 void releaseMasterBlock(MasterBlock * masterBlock);
+void releaseStylingBlock(StylingBlock * stylingBlock);
 void releaseStyling(Styling * styling);
 void releaseText(Text * text);
-void releaseInner(Inner * inner);
+// void releaseInner(Inner * inner);
 void releaseStr(char * str);
 void releaseList(List * list);
 void releaseLink(Link * link);

@@ -62,10 +62,10 @@ MasterBlock * UnionMasterBlockSemanticAction(MasterBlock * first, Block * second
 	return newMasterBlock;
 }
 
-Block * HeaderBlockSemanticAction(Inner * inner, int number) {
+Block * HeaderBlockSemanticAction(Text * text, int number) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Block * newBlock = calloc(1, sizeof(Block));
-	newBlock->inner = inner;
+	newBlock->text = text;
 	switch (number)
 	{
 	case 1:
@@ -90,16 +90,16 @@ Block * HeaderBlockSemanticAction(Inner * inner, int number) {
 	return newBlock;
 }
 
-Block * TextBlockSemanticAction(Inner * inner){
+Block * TextBlockSemanticAction(Text * text){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Block * newBlock = calloc(1, sizeof(Block));
-	newBlock->inner = inner;
+	newBlock->text = text;
 	newBlock->type = TEXT;
 	return newBlock;
 }
 
 
-Block * StylingBlockSemanticAction(Styling * styling) {
+Block * BlockStylingBlockSemanticAction(StylingBlock * styling) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Block * newBlock = calloc(1, sizeof(Block));
 	newBlock->styling = styling;
@@ -108,14 +108,14 @@ Block * StylingBlockSemanticAction(Styling * styling) {
 }
 
 
-Styling * UnionStylingSemanticAction(Styling * first, Styling * second) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Styling * out = calloc(1, sizeof(Styling));
-	out->type = S_UNION;
-	out->first = first;
-	out->second = second;
-	return out;
-}
+// Styling * UnionStylingSemanticAction(Styling * first, Styling * second) {
+// 	_logSyntacticAnalyzerAction(__FUNCTION__);
+// 	Styling * out = calloc(1, sizeof(Styling));
+// 	out->type = S_UNION;
+// 	out->first = first;
+// 	out->second = second;
+// 	return out;
+// }
 
 
 Styling * StylingSemanticAction(char * string, StylingType type) {
@@ -136,22 +136,32 @@ Text * TextSemanticAction(char * string){
 	return text;
 }
 
-Text * UnionTextSemanticAction(Text * left, char * ws, Text * right) {
+Text * UnionTextSemanticAction(Text * text, char * ws, char * string,int textPosition) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Text * out = calloc(1, sizeof(Text));
-	out->type = UNION;
-	out->left = left;
-	out->ws = ws;
-	out->right = right;
+	Text * stringAux = calloc(1, sizeof(Text));
+	stringAux->type = TEXT;
+	stringAux->string = string;
+	if(textPosition == 1){
+		out->type = UNION;
+		out->left = text;
+		out->ws = ws;
+		out->right = stringAux;
+	}else if(textPosition == 2){
+		out->type = UNION;
+		out->left = stringAux;
+		out->ws = ws;
+		out->right = text;
+	}
 	return out;
 }
 
-Inner * TextInnerSemanticAction(Text * text) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Inner * inner = calloc(1, sizeof(Inner));
-	inner->text = text;
-	return inner;
-}
+// Inner * TextInnerSemanticAction(Text * text) {
+// 	_logSyntacticAnalyzerAction(__FUNCTION__);
+// 	Inner * text = calloc(1, sizeof(Inner));
+// 	text->text = text;
+// 	return inner;
+// }
 
 
 Text * FormatTextSemanticAction(Text * text, TextType type) {
@@ -162,10 +172,10 @@ Text * FormatTextSemanticAction(Text * text, TextType type) {
 	return newText;
 }
 
-List * ListSemanticAction(int tabCount, Inner * inner, ListType type){
+List * ListSemanticAction(int tabCount, Text * text, ListType type){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	List * list = calloc(1, sizeof(List));
-	list->content = inner;
+	list->content = text;
 	list->tabCount = tabCount;
 	list->type = type;
 	return list;
@@ -191,10 +201,23 @@ Text * LinkSemanticAction(char * string, char * link){
 	return text;
 }
 
-Block * BlockquoteBlockSemanticAction(Inner * inner) {
+Block * BlockquoteBlockSemanticAction(Text * text) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Block * newBlock = calloc(1, sizeof(Block));
-	newBlock->inner = inner;
+	newBlock->text = text;
 	newBlock->type = BQ;
 	return newBlock;
+}
+
+StylingBlock * UnionStylingBlockSemanticAction(StylingBlock * block, Styling * styling){
+	StylingBlock * out = calloc(1, sizeof(StylingBlock));
+	out->block = block;
+	out->styling = styling;
+	return out;
+}
+
+StylingBlock * StylingBlockSemanticAction(Styling * styling){
+	StylingBlock * out = calloc(1, sizeof(StylingBlock));
+	out->styling = styling;
+	return out;
 }

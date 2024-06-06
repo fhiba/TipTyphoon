@@ -19,9 +19,9 @@
 	Program * program;
 	MasterBlock * master_block;
 	Styling * styling;
-	Inner * inner;
 	List * list;
 	Sublist * sublist;
+	StylingBlock * stylingBlock;
 }
 
 /**
@@ -76,8 +76,8 @@
 %type <program> program
 %type <master_block> master_block
 %type <styling> styling
-%type <inner> inner
 %type <list> list
+%type <stylingBlock> stylingBlock
 %%
 
 program: master_block                  {$$ = MasterBlockProgramSemanticAction(currentCompilerState(), $1);}
@@ -89,6 +89,11 @@ master_block: block						{$$ = MasterBlockSemanticAction($1);}
 	;
 
 
+stylingBlock: stylingBlock styling		{$$ = UnionStylingBlockSemanticAction($1, $2);}
+			| styling					{$$ = StylingBlockSemanticAction($1);}
+	;
+
+
 styling: FS_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, FS);}
 	| FF_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, FF);}
 	| FC_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, FC);}
@@ -96,35 +101,32 @@ styling: FS_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction(
 	| UC_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, UC);}
 	| U_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, U);}
 	| P_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, P);}
-	| styling styling 								{$$ = UnionStylingSemanticAction($1, $2);}
 	;
 	
-block:  H1_TOKEN inner							{$$ = HeaderBlockSemanticAction($2,1);}
-	| H2_TOKEN inner    						{$$ = HeaderBlockSemanticAction($2,2);}
-	| H3_TOKEN inner							{$$ = HeaderBlockSemanticAction($2,3);}
-	| H4_TOKEN inner	    					{$$ = HeaderBlockSemanticAction($2,4);}
-	| H5_TOKEN inner 							{$$ = HeaderBlockSemanticAction($2,5);}
-	| H6_TOKEN inner 							{$$ = HeaderBlockSemanticAction($2,6);}
-	| BEGIN_STYLING styling END_STYLING			{$$ = StylingBlockSemanticAction($2);}
-	| BLOCKQUOTE_TOKEN inner					{$$ = BlockquoteBlockSemanticAction($2);}
-	| inner                                     {$$ = TextBlockSemanticAction($1);}
+block:  H1_TOKEN text							{$$ = HeaderBlockSemanticAction($2,1);}
+	| H2_TOKEN text    						{$$ = HeaderBlockSemanticAction($2,2);}
+	| H3_TOKEN text							{$$ = HeaderBlockSemanticAction($2,3);}
+	| H4_TOKEN text	    					{$$ = HeaderBlockSemanticAction($2,4);}
+	| H5_TOKEN text 							{$$ = HeaderBlockSemanticAction($2,5);}
+	| H6_TOKEN text 							{$$ = HeaderBlockSemanticAction($2,6);}
+	| BEGIN_STYLING stylingBlock END_STYLING			{$$ = BlockStylingBlockSemanticAction($2);}
+	| BLOCKQUOTE_TOKEN text					{$$ = BlockquoteBlockSemanticAction($2);}
+	| text                                     {$$ = TextBlockSemanticAction($1);}
 	| list                                      {$$ = ListBlockSemanticAction($1);}
 	;
 
 
-list: ORDERED_LIST inner							{$$ = ListSemanticAction($1, $2, OL);}
-	| UNORDERED_LIST inner						    {$$ = ListSemanticAction($1, $2, UL);}
+list: ORDERED_LIST text							{$$ = ListSemanticAction($1, $2, OL);}
+	| UNORDERED_LIST text						    {$$ = ListSemanticAction($1, $2, UL);}
 	;
 
 
-inner: text										{$$ = TextInnerSemanticAction($1);}
-	;
-
-text: text WS text                              {$$ = UnionTextSemanticAction($1, $2, $3);}
+text: text WS STRING                              {$$ = UnionTextSemanticAction($1, $2, $3,1);}
 	| STRING 									{$$ = TextSemanticAction($1);}
 	| START_LINK STRING END_LINK                {$$ = LinkSemanticAction($1,$2);}
 	| B_TOKEN text B_TOKEN						{$$ = FormatTextSemanticAction($2, BOLD);}
 	| I_TOKEN text I_TOKEN						{$$ = FormatTextSemanticAction($2, ITALIC);}
 	| C_TOKEN text C_TOKEN						{$$ = FormatTextSemanticAction($2, CODE);}
 	;
+
 %%
