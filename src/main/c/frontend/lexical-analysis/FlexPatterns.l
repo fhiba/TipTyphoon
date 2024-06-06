@@ -62,32 +62,32 @@ URI "http"("s")?"://"[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}("/"[^\s]*)?|#([[:graph:]]{-
 <styling>{UnderlineColour}                                                  {BEGIN(styling_color); return UCTokenLexemeAction(createLexicalAnalyzerContext());}
 <styling>{Background}                                                       {BEGIN(styling_color); return BCTokenLexemeAction(createLexicalAnalyzerContext());}
 <styling>[[:space:]]+                                                       {IgnoredLexemeAction(createLexicalAnalyzerContext());}
-<styling_bool>[[:space:]]+                                                  {IgnoredLexemeAction(createLexicalAnalyzerContext());}
-<styling_position>[[:space:]]+                                              {IgnoredLexemeAction(createLexicalAnalyzerContext());}
-<styling_color>[[:space:]]+                                                 {IgnoredLexemeAction(createLexicalAnalyzerContext());}
-<styling_size>[[:space:]]+                                                  {IgnoredLexemeAction(createLexicalAnalyzerContext());}
-<styling_ff>[[:space:]]+                                                    {IgnoredLexemeAction(createLexicalAnalyzerContext());}
 <styling>{FontColour}                                                       {BEGIN(styling_color); return FCTokenLexemeAction(createLexicalAnalyzerContext());}
 <styling>{FontSize}                                                         {BEGIN(styling_size); return FSTokenLexemeAction(createLexicalAnalyzerContext());}
 <styling>{FontFamily}                                                       {BEGIN(styling_ff); return FFTokenLexemeAction(createLexicalAnalyzerContext());}
 <styling>{Underline}                                                        {BEGIN(styling_bool); return UTokenLexemeAction(createLexicalAnalyzerContext());}
 <styling>{Position}                                                         {BEGIN(styling_position); return PTokenLexemeAction(createLexicalAnalyzerContext());}
-<styling_ff>{StylingString}                                                 {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
-<styling_bool>{Boolean}                                                     {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
-<styling_position>{PositionValue}                                           {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
-<styling_size>{Size}                                                        {return StylingValueLexemeAction(createLexicalAnalyzerContext());}            
-<styling_color>{ColourRegex}                                                {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
-<styling_size>{EndStyling}                                                  {BEGIN(styling);return EndStylingValueLexemeAction(createLexicalAnalyzerContext());}
-<styling_ff>{EndStyling}                                                    {BEGIN(styling);return EndStylingValueLexemeAction(createLexicalAnalyzerContext());}
-<styling_color>{EndStyling}                                                 {BEGIN(styling);return EndStylingValueLexemeAction(createLexicalAnalyzerContext());}
-<styling_bool>{EndStyling}                                                  {BEGIN(styling);return EndStylingValueLexemeAction(createLexicalAnalyzerContext());}
-<styling_position>{EndStyling}                                              {BEGIN(styling);return EndStylingValueLexemeAction(createLexicalAnalyzerContext());}
 <styling>"\""                                                               {BEGIN(INITIAL);return EndStylingLexemeAction(createLexicalAnalyzerContext());}
 <styling>.                                                                  {return UnknownLexemeAction(createLexicalAnalyzerContext());}
+<styling_bool>[[:space:]]+                                                  {IgnoredLexemeAction(createLexicalAnalyzerContext());}
+<styling_bool>{EndStyling}                                                  {BEGIN(styling);return EndStylingValueLexemeAction(createLexicalAnalyzerContext());}
 <styling_bool>.                                                             {return UnknownLexemeAction(createLexicalAnalyzerContext());}
-<styling_size>.                                                             {return UnknownLexemeAction(createLexicalAnalyzerContext());}
-<styling_position>.                                                         {return UnknownLexemeAction(createLexicalAnalyzerContext());}
+<styling_bool>{Boolean}                                                     {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
+<styling_color>[[:space:]]+                                                 {IgnoredLexemeAction(createLexicalAnalyzerContext());}
+<styling_color>{ColourRegex}                                                {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
 <styling_color>.                                                            {return UnknownLexemeAction(createLexicalAnalyzerContext());}
+<styling_color>{EndStyling}                                                 {BEGIN(styling);return EndStylingValueLexemeAction(createLexicalAnalyzerContext());}
+<styling_ff>[[:space:]]+                                                    {IgnoredLexemeAction(createLexicalAnalyzerContext());}
+<styling_ff>{StylingString}                                                 {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
+<styling_ff>{EndStyling}                                                    {BEGIN(styling);return EndStylingValueLexemeAction(createLexicalAnalyzerContext());}
+<styling_size>[[:space:]]+                                                  {IgnoredLexemeAction(createLexicalAnalyzerContext());}
+<styling_size>{Size}                                                        {return StylingValueLexemeAction(createLexicalAnalyzerContext());}            
+<styling_size>{EndStyling}                                                  {BEGIN(styling);return EndStylingValueLexemeAction(createLexicalAnalyzerContext());}
+<styling_size>.                                                             {return UnknownLexemeAction(createLexicalAnalyzerContext());}
+<styling_position>[[:space:]]+                                              {IgnoredLexemeAction(createLexicalAnalyzerContext());}
+<styling_position>{PositionValue}                                           {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
+<styling_position>.                                                         {return UnknownLexemeAction(createLexicalAnalyzerContext());}
+<styling_position>{EndStyling}                                              {BEGIN(styling);return EndStylingValueLexemeAction(createLexicalAnalyzerContext());}
 ^"> "                                                                       {return BlockquoteLexemeAction(createLexicalAnalyzerContext());}
 \[([[:space:]]{-}[\n]|{string})+\]"( "                                      {BEGIN(hyper);return BeginLinkLexemeAction(createLexicalAnalyzerContext());}
 <hyper>{URI}                                                                {return StringLexemeAction(createLexicalAnalyzerContext());}
