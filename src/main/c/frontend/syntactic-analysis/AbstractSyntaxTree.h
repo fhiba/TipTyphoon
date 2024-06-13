@@ -21,6 +21,7 @@ typedef enum SublistType SublistType;
 typedef enum ListType ListType;
 typedef enum TextType TextType;
 
+
 typedef struct Text Text;
 typedef struct Link Link;
 typedef struct Sublist Sublist;
@@ -33,6 +34,7 @@ typedef struct Program Program;
 typedef struct NTInline NTInline;
 typedef struct TInline TInline;
 typedef struct StylingBlock StylingBlock;
+
 
 /**
  * Node types for the Abstract Syntax Tree (AST).
@@ -155,7 +157,6 @@ void releaseMasterBlock(MasterBlock * masterBlock);
 void releaseStylingBlock(StylingBlock * stylingBlock);
 void releaseStyling(Styling * styling);
 void releaseText(Text * text);
-// void releaseInner(Inner * inner);
 void releaseStr(char * str);
 void releaseList(List * list);
 void releaseLink(Link * link);

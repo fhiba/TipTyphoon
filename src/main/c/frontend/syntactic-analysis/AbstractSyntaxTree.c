@@ -46,13 +46,6 @@ void releaseBlock(Block * block) {
 	}
 }
 
-// void releaseInner(Inner * inner) {
-// 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-// 	if (inner != NULL) {
-// 		releaseText(inner->text);
-// 		free(inner);
-// 	}
-// }
 
 void releaseProgram(Program * program) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
