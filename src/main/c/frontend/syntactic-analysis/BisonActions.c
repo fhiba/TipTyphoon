@@ -156,12 +156,6 @@ Text * UnionTextSemanticAction(Text * text, char * ws, char * string,int textPos
 	return out;
 }
 
-// Inner * TextInnerSemanticAction(Text * text) {
-// 	_logSyntacticAnalyzerAction(__FUNCTION__);
-// 	Inner * text = calloc(1, sizeof(Inner));
-// 	text->text = text;
-// 	return inner;
-// }
 
 
 Text * FormatTextSemanticAction(Text * text, TextType type) {

@@ -22,6 +22,7 @@
 	List * list;
 	Sublist * sublist;
 	StylingBlock * stylingBlock;
+
 }
 
 /**
@@ -78,6 +79,8 @@
 %type <styling> styling
 %type <list> list
 %type <stylingBlock> stylingBlock
+
+%left WS
 %%
 
 program: master_block                  {$$ = MasterBlockProgramSemanticAction(currentCompilerState(), $1);}
@@ -92,7 +95,6 @@ master_block: block						{$$ = MasterBlockSemanticAction($1);}
 stylingBlock: stylingBlock styling		{$$ = UnionStylingBlockSemanticAction($1, $2);}
 			| styling					{$$ = StylingBlockSemanticAction($1);}
 	;
-
 
 styling: FS_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, FS);}
 	| FF_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, FF);}
@@ -109,7 +111,7 @@ block:  H1_TOKEN text							{$$ = HeaderBlockSemanticAction($2,1);}
 	| H4_TOKEN text	    					{$$ = HeaderBlockSemanticAction($2,4);}
 	| H5_TOKEN text 							{$$ = HeaderBlockSemanticAction($2,5);}
 	| H6_TOKEN text 							{$$ = HeaderBlockSemanticAction($2,6);}
-	| BEGIN_STYLING stylingBlock END_STYLING			{$$ = BlockStylingBlockSemanticAction($2);}
+	| BEGIN_STYLING stylingBlock END_STYLING	{$$ = BlockStylingBlockSemanticAction($2);}
 	| BLOCKQUOTE_TOKEN text					{$$ = BlockquoteBlockSemanticAction($2);}
 	| text                                     {$$ = TextBlockSemanticAction($1);}
 	| list                                      {$$ = ListBlockSemanticAction($1);}
@@ -120,8 +122,7 @@ list: ORDERED_LIST text							{$$ = ListSemanticAction($1, $2, OL);}
 	| UNORDERED_LIST text						    {$$ = ListSemanticAction($1, $2, UL);}
 	;
 
-
-text: text WS STRING                              {$$ = UnionTextSemanticAction($1, $2, $3,1);}
+text: text WS text                              {$$ = UnionTextSemanticAction($1, $2, $3);}
 	| STRING 									{$$ = TextSemanticAction($1);}
 	| START_LINK STRING END_LINK                {$$ = LinkSemanticAction($1,$2);}
 	| B_TOKEN text B_TOKEN						{$$ = FormatTextSemanticAction($2, BOLD);}
