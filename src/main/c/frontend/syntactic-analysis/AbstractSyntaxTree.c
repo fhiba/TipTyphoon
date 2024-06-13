@@ -31,10 +31,10 @@ void releaseBlock(Block * block) {
 		case H6:
 		case BQ:
 		case SIMPLE:
-			releaseInner(block->inner);
+			releaseText(block->text);
 			break;
 		case STYLING:
-			releaseStyling(block->styling);
+			releaseStylingBlock(block->styling);
 			break;
 		case LIST:
 			releaseList(block->list);
@@ -46,13 +46,6 @@ void releaseBlock(Block * block) {
 	}
 }
 
-void releaseInner(Inner * inner) {
-	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
-	if (inner != NULL) {
-		releaseText(inner->text);
-		free(inner);
-	}
-}
 
 void releaseProgram(Program * program) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
@@ -86,10 +79,6 @@ void releaseStyling(Styling * styling) {
 		case UC:
 		case U:
 			releaseStr(styling->string);
-			break;
-		case S_UNION:
-			releaseStyling(styling->first);
-			releaseStyling(styling->second);
 			break;
 		default:
 			break;
@@ -133,7 +122,7 @@ void releaseStr(char * string) {
 void releaseList(List * list) {
 	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
 	if (list != NULL) {
-		releaseInner(list->content);
+		releaseText(list->content);
 		free(list);
 	}
 }
@@ -144,5 +133,16 @@ void releaseLink(Link * link) {
 		releaseStr(link->string);
 		releaseStr(link->link);
 		free(link);
+	}
+}
+
+void releaseStylingBlock(StylingBlock * stylingBlock){
+	logDebugging(_logger, "Executing destructor: %s", __FUNCTION__);
+	if (stylingBlock != NULL) {
+		if(stylingBlock->block != NULL){
+			releaseStylingBlock(stylingBlock->block);
+		}
+		releaseStyling(stylingBlock->styling);
+		free(stylingBlock);
 	}
 }
