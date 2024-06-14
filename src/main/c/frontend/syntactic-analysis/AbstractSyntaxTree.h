@@ -17,9 +17,11 @@ void shutdownAbstractSyntaxTreeModule();
 typedef enum BlockType BlockType;
 typedef enum MasterBlockType MasterBlockType;
 typedef enum StylingType StylingType;
+typedef enum StylingBlockType StylingBlockType;
 typedef enum SublistType SublistType;
 typedef enum ListType ListType;
 typedef enum TextType TextType;
+
 
 
 typedef struct Text Text;
@@ -40,6 +42,10 @@ typedef struct StylingBlock StylingBlock;
  * Node types for the Abstract Syntax Tree (AST).
  */
 
+enum StylingBlockType {
+	STYLING_BLOCK,
+	STYLING_BLOCK_LIST
+};
 
 enum StylingType {
 	FF,
@@ -92,6 +98,7 @@ struct StylingBlock {
 		};
 		Styling * style;
 	};
+	StylingBlockType type;
 };
 
 struct List{

@@ -148,27 +148,287 @@ void shutdownGeneratorModule() {
 // 	return indentation(_indentationCharacter, level, _indentationSize);
 // }
 
-// /**
-//  * Outputs a formatted string to standard output.
-//  */
-// static void _output(const unsigned int indentationLevel, const char * const format, ...) {
-// 	va_list arguments;
-// 	va_start(arguments, format);
-// 	char * indentation = _indentation(indentationLevel);
-// 	char * effectiveFormat = concatenate(2, indentation, format);
-// 	vfprintf(stdout, effectiveFormat, arguments);
-// 	free(effectiveFormat);
-// 	free(indentation);
-// 	va_end(arguments);
-// }
+/**
+ * Outputs a formatted string to standard output.
+ */
+static void _output(const unsigned int indentationLevel, const char * const format, ...) {
+	va_list arguments;
+	va_start(arguments, format);
+	char * indentation = _indentation(indentationLevel);
+	char * effectiveFormat = concatenate(2, indentation, format);
+	vfprintf(stdout, effectiveFormat, arguments);
+	free(effectiveFormat);
+	free(indentation);
+	va_end(arguments);
+}
 
 // /** PUBLIC FUNCTIONS */
+void _generateProgram(Program * program);
+void _generateEpilogue();
+void _generatePrologue();
+void _generateMasterBlock(MasterBlock * master);
+void _generateHeader(Block * block, int level);
+void _generateBlockQuote(Block * block);
+void _generateList(List * list);
+void _generateSimple(Block * block);
+void _generateOrderedList(List * list);
+void _generateLink(Link * link);
+
+StylingBlock* stylesToApply = NULL;
+
+
 
 void generate(CompilerState * compilerState) {
 	logDebugging(_logger, "Generating final output...");
 	_generatePrologue();
-	_generateProgram(compilerState->abstractSyntaxtTree);
+    Program * program = compilerState->abstractSyntaxtTree;
+	_generateProgram(program);
 	_generateEpilogue(compilerState->value);
 	logDebugging(_logger, "Generation is done.");
 }
 
+void _generateProgram(Program * program) {
+    if(program == NULL)
+        return;
+    _generateMasterBlock(program->masterBlock);
+}
+
+void _generateMasterBlock(MasterBlock * master) {
+    if(master == NULL) 
+        return;
+    if(master->type == MASTER_BLOCK_LIST){
+        _generateMasterBlock(master->first);
+        _generateBlock(master->second);
+    } else {
+        _generateBlock(master->block);
+    }
+}
+
+void _generateBlock(Block * block) {
+    switch (block->type)
+    {
+        case H1:
+            _generateHeader(block,1);
+            break;
+        case H2:
+            _generateHeader(block,2);
+            break;
+        case H3:
+            _generateHeader(block,3);
+            break;
+        case H4:
+            _generateHeader(block,4);
+            break;
+        case H5:
+            _generateHeader(block,5);
+            break;
+        case H6:
+            _generateHeader(block,6);
+            break;
+        case BQ:
+            _generateBlockQuote(block);
+            break;
+        case LIST:
+            _generateList(block->list);
+            break;
+        case SIMPLE:
+            _generateSimple(block);
+            break;
+        case STYLING:
+            stylesToApply = block->styling;
+            break;
+    }
+}
+
+void _generateUnorderedList(List * list) {
+    _output(0, "%s", "<ul");
+    if(stylesToApply != NULL){
+        _generateStyling(stylesToApply);
+        stylesToApply = NULL;
+    }
+    _output(0, "%s", ">\n");
+     _output(0, "%s", "<li>\n");
+    _generateText(list->content);
+    _output(0, "%s", "</li>\n");
+    _output(0, "%s", "</ul>\n");
+}
+
+void _generateOrderedList(List * list) {
+    _output(0, "%s", "<ol");
+    if(stylesToApply != NULL){
+        _generateStyling(stylesToApply);
+        stylesToApply = NULL;
+    }
+    _output(0, "%s", ">\n");
+    _output(0, "%s", "<li>\n");
+    _generateText(list->content);
+    _output(0, "%s", "</li>\n");
+    _output(0, "%s", "</ol>\n");
+}
+
+void _generateList(List * list) {
+    switch (list->type)
+    {
+        case UL:
+            _generateUnorderedList(list);
+            break;
+        case OL:
+            _generateOrderedList(list);
+            break;
+    }
+}
+
+
+void _generateBlockQuote(Block * block) {
+    _output(0, "%s", "<blockquote");
+    if(stylesToApply != NULL){
+        _generateStyling(stylesToApply);
+        stylesToApply = NULL;
+    }
+    _output(0, "%s", ">\n");
+        _generateText(block->text);
+    _output(0, "%s", "</blockquote>\n");
+}
+
+void _generateHeader(Block * block, int level) {
+    _output(0, "%s", "<h");
+    _output(0, "%d", level);
+    if(stylesToApply != NULL){
+        _generateStyling(stylesToApply);
+        stylesToApply = NULL;
+    }
+    _output(0, "%s", ">\n");
+        _generateText(block->text);
+    _output(0, "%s", "</h");
+    _output(0, "%d", level);
+    _output(0, "%s", ">\n");
+}
+
+
+void _generateSimple(Block * block) {
+    _output(0, "%s", "<p");
+    if(stylesToApply != NULL){
+        _generateStyling(stylesToApply);
+        stylesToApply = NULL;
+    }
+    _output(0, "%s", ">\n");
+        _generateText(block->text);
+    _output(0, "%s", "</p>\n");
+}
+
+void _generatePrologue(){
+    _output(0, "%s", "<!DOCTYPE html>\n");
+    _output(0, "%s", "<html>\n");
+    _output(0, "%s", "<head>\n");
+    _output(0, "%s", "<title>HTML Output</title>\n");
+    _output(0, "%s", "</head>\n");
+    _output(0, "%s", "<body>\n");
+
+}
+
+void _generateEpilogue(){
+    _output(0, "%s", "</body>\n");
+    _output(0, "%s", "</html>\n");
+    //open file
+    //write output to file
+    //close file
+    
+}
+
+void _generateText(Text * text) {
+    switch (text->type)
+    {
+
+    case TEXT:
+        _output(0, "%s", text->string);
+        break;
+    case UNION:
+        _generateText(text->left);
+        _output(0, "%s", text->string);
+        _generateText(text->right);
+        break;
+    case BOLD:
+        _output(0, "%s", "<strong>");
+        _generateText(text->child);
+        _output(0, "%s", "</strong>");
+        break;
+    case ITALIC:
+        _output(0, "%s", "<em>");
+        _generateText(text->child);
+        _output(0, "%s", "</em>");
+        break;
+    case CODE:
+        _output(0, "%s", "<code>");
+        _generateText(text->child);
+        _output(0, "%s", "</code>");
+        break;
+    case LINK:
+        _generateLink(text->link);
+        break;
+    };
+}
+
+void _generateLink(Link * link) {
+    _output(0, "%s", "<a href=\"");
+    _output(0, "%s", link->link);
+    _output(0, "%s", "\">");
+    _generateText(link->string);
+    _output(0, "%s", "</a>");
+}
+
+
+void _generateStyle(Styling * style) {
+    switch (style->type)
+    {
+    	case FF:
+            _output(0, "%s", "font-family:");
+            _output(0, "%s", style->string);
+            _output(0, "%s", ", sans-serif;");
+            _output(0, "%s", ";");
+            break;
+	    case FS:
+            _output(0, "%s", "font-size:");
+            _output(0, "%s", style->string);
+            _output(0, "%s", ";");
+            break;
+	    case FC:
+            _output(0, "%s", "color:");
+            _output(0, "%s", style->string);
+            _output(0, "%s", ";");
+            break;
+	    case BC:
+            _output(0, "%s", "background-color:");
+            _output(0, "%s", style->string);
+            _output(0, "%s", ";");
+            break;
+	    case UC:
+            _output(0, "%s", "text-decoration-color:");
+            _output(0, "%s", style->string);
+            _output(0, "%s", ";");
+            break;
+	    case U:
+            _output(0, "%s", "text-decoration:");
+            _output(0, "%s", "underline;");
+            break;
+	    case P:
+            _output(0, "%s", "justify-content:");
+            _output(0, "%s", style->string);
+            _output(0, "%s", ";");
+            break;
+    }
+}
+
+void _generateStyling(StylingBlock * styling) {
+    _output(0, "%s", " style=\"");
+    switch (styling->type)
+    {
+        case STYLING_BLOCK_LIST:
+            _generateStyling(styling->block);
+            _generateStyle(styling->styling);
+            break;
+        case STYLING_BLOCK:
+            _generateStyle(styling->style);
+            break;
+    }
+    _output(0, "%s", "\"");
+}

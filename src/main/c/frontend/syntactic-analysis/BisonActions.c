@@ -207,11 +207,13 @@ StylingBlock * UnionStylingBlockSemanticAction(StylingBlock * block, Styling * s
 	StylingBlock * out = calloc(1, sizeof(StylingBlock));
 	out->block = block;
 	out->styling = styling;
+	out->type = STYLING_BLOCK_LIST;
 	return out;
 }
 
 StylingBlock * StylingBlockSemanticAction(Styling * styling){
 	StylingBlock * out = calloc(1, sizeof(StylingBlock));
 	out->styling = styling;
+	out->type = STYLING_BLOCK;
 	return out;
 }
