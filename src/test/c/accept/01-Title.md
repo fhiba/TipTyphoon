@@ -7,4 +7,4 @@
     - _*unorderlist2bolditalic*_
 `codeblock`
 > aca tendria que ir el blockquote
-esto es un *bold* seguido de _italic_*pegado*
+esto es un *[link]( http://ww.aa )* seguido de _italic_*pegado*

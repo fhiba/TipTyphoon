@@ -1,5 +1,5 @@
 #include "backend/code-generation/Generator.h"
-#include "backend/domain-specific/Calculator.h"
+#include "backend/domain-specific/LinkChecker.h"
 #include "frontend/lexical-analysis/FlexActions.h"
 #include "frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "frontend/syntactic-analysis/BisonActions.h"
@@ -37,15 +37,14 @@ const int main(const int count, const char ** arguments) {
 	if (syntacticAnalysisStatus == ACCEPT) {
 		logDebugging(logger, "Computing expression value...");
 		Program * program = compilerState.abstractSyntaxtTree;
-		/*ComputationResult computationResult = computeExpression(program->expression);
-		if (computationResult.succeed) {
-			compilerState.value = computationResult.value;
+		bool linkCheck = checkProgram(program->masterBlock);
+		if (linkCheck) {
 			generate(&compilerState);
 		}
 		else {
 			logError(logger, "The computation phase rejects the input program.");
 			compilationStatus = FAILED;
-		}*/
+		}
 		logDebugging(logger, "Releasing AST resources...");
 		releaseProgram(program);
 	}

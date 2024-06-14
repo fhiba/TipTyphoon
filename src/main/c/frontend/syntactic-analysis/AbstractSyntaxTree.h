@@ -129,6 +129,7 @@ struct MasterBlock {
 struct Program {
 	MasterBlock * masterBlock;
 };
+
 struct Text {
 	union{
 		char * string;

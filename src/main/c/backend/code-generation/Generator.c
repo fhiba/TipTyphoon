@@ -164,10 +164,11 @@ void shutdownGeneratorModule() {
 
 // /** PUBLIC FUNCTIONS */
 
-// void generate(CompilerState * compilerState) {
-// 	logDebugging(_logger, "Generating final output...");
-// 	_generatePrologue();
-// 	_generateProgram(compilerState->abstractSyntaxtTree);
-// 	_generateEpilogue(compilerState->value);
-// 	logDebugging(_logger, "Generation is done.");
-// }
+void generate(CompilerState * compilerState) {
+	logDebugging(_logger, "Generating final output...");
+	_generatePrologue();
+	_generateProgram(compilerState->abstractSyntaxtTree);
+	_generateEpilogue(compilerState->value);
+	logDebugging(_logger, "Generation is done.");
+}
+
