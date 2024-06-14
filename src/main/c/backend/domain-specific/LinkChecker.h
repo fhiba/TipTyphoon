@@ -1,13 +1,11 @@
 #ifndef LINKCHECKER_H
 #define LINKCHECKER_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "../../frontend/syntactic-analysis/AbstractSyntaxTree.h"
+#include "../../shared/Type.h"
 
 
-bool checkProgram(MasterBlock * masterBlock);
+boolean checkProgram(MasterBlock * masterBlock);
 
 
 #define BLOCK_SIZE 100

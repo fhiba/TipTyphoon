@@ -1,7 +1,6 @@
-// #include "backend/code-generation/Generator.h"
+#include "backend/code-generation/Generator.h"
 #include "backend/domain-specific/LinkChecker.h"
 #include "frontend/lexical-analysis/FlexActions.h"
-#include "frontend/syntactic-analysis/AbstractSyntaxTree.h"
 #include "frontend/syntactic-analysis/BisonActions.h"
 #include "frontend/syntactic-analysis/SyntacticAnalyzer.h"
 #include "shared/CompilerState.h"
@@ -37,7 +36,7 @@ const int main(const int count, const char ** arguments) {
 	if (syntacticAnalysisStatus == ACCEPT) {
 		logDebugging(logger, "Computing expression value...");
 		Program * program = compilerState.abstractSyntaxtTree;
-		bool linkCheck = checkProgram(program->masterBlock);
+		boolean linkCheck = checkProgram(program->masterBlock);
 		if (linkCheck) {
 			generate(&compilerState);
 		}
