@@ -22,6 +22,7 @@ void storeHeader(char * text, HeaderList * headerList){
 }
 
 void storeLink(Text * text, LinkList * linkList){
+    if(text->link->link[0] != '#'){
     LinkList * newLink = calloc(1,sizeof(LinkList));
     newLink->link = text->link->link;
     newLink->next = linkList;
@@ -47,6 +48,20 @@ bool checkLinks(HeaderList * headerList, LinkList * linkList){
     return true;
 }
 
+void freeHeaders(HeaderList * headerList){
+    if(headerList != NULL){
+        freeHeaders(headerList->next);
+        free(headerList);
+    }
+}
+
+void freeLinks(LinkList * linkList){
+    if(linkList != NULL){
+        freeLinks(linkList->next);
+        free(linkList);
+    }
+}
+
 //primero guardo todos los headers y los links
 //luego recorro la lista de links chequeando que exista dentro de la lista de headers
 bool checkProgram(MasterBlock * masterBlock) {
@@ -63,7 +78,9 @@ bool checkProgram(MasterBlock * masterBlock) {
         checkBlock(masterBlock->block, headerList, linkList);
     }
     
-    
+    out = checkLinks(headerList, linkList);
+    freeHeaders(headerList);
+    freeLinks(linkList);
     return out;
 }
 

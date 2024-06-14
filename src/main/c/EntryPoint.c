@@ -1,4 +1,4 @@
-#include "backend/code-generation/Generator.h"
+// #include "backend/code-generation/Generator.h"
 #include "backend/domain-specific/LinkChecker.h"
 #include "frontend/lexical-analysis/FlexActions.h"
 #include "frontend/syntactic-analysis/AbstractSyntaxTree.h"
@@ -18,7 +18,7 @@ const int main(const int count, const char ** arguments) {
 	initializeBisonActionsModule();
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
-	initializeCalculatorModule();
+	// initializeCalculatorModule();
 	initializeGeneratorModule();
 
 	// Logs the arguments of the application.
@@ -55,7 +55,7 @@ const int main(const int count, const char ** arguments) {
 
 	logDebugging(logger, "Releasing modules resources...");
 	shutdownGeneratorModule();
-	shutdownCalculatorModule();
+	// shutdownCalculatorModule();
 	shutdownAbstractSyntaxTreeModule();
 	shutdownSyntacticAnalyzerModule();
 	shutdownBisonActionsModule();

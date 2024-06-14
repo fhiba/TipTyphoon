@@ -144,9 +144,9 @@ void shutdownGeneratorModule() {
 // /**
 //  * Generates an indentation string for the specified level.
 //  */
-// static char * _indentation(const unsigned int level) {
-// 	return indentation(_indentationCharacter, level, _indentationSize);
-// }
+static char * _indentation(const unsigned int level) {
+	return indentation(_indentationCharacter, level, _indentationSize);
+}
 
 /**
  * Outputs a formatted string to standard output.
@@ -173,6 +173,12 @@ void _generateList(List * list);
 void _generateSimple(Block * block);
 void _generateOrderedList(List * list);
 void _generateLink(Link * link);
+void _generateText(Text * text);
+void _generateBlock(Block * block);
+void _generateStyling(StylingBlock * styling);
+void _generateStyle(Styling * style);
+void _generateUnorderedList(List * list);
+
 
 StylingBlock* stylesToApply = NULL;
 
@@ -372,7 +378,7 @@ void _generateLink(Link * link) {
     _output(0, "%s", "<a href=\"");
     _output(0, "%s", link->link);
     _output(0, "%s", "\">");
-    _generateText(link->string);
+    _output(0,"%s",link->string);
     _output(0, "%s", "</a>");
 }
 

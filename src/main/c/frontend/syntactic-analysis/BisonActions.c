@@ -136,23 +136,13 @@ Text * TextSemanticAction(char * string){
 	return text;
 }
 
-Text * UnionTextSemanticAction(Text * text, char * ws, char * string,int textPosition) {
+Text * UnionTextSemanticAction(Text * left, char * ws, Text * right) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Text * out = calloc(1, sizeof(Text));
-	Text * stringAux = calloc(1, sizeof(Text));
-	stringAux->type = TEXT;
-	stringAux->string = string;
-	if(textPosition == 1){
-		out->type = UNION;
-		out->left = text;
-		out->ws = ws;
-		out->right = stringAux;
-	}else if(textPosition == 2){
-		out->type = UNION;
-		out->left = stringAux;
-		out->ws = ws;
-		out->right = text;
-	}
+	out->type = UNION;
+	out->left = left;
+	out->ws = ws;
+	out->right = right;
 	return out;
 }
 
