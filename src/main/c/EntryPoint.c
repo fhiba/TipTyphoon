@@ -17,7 +17,7 @@ const int main(const int count, const char ** arguments) {
 	initializeBisonActionsModule();
 	initializeSyntacticAnalyzerModule();
 	initializeAbstractSyntaxTreeModule();
-	// initializeCalculatorModule();
+	initializeCheckerModule();
 	initializeGeneratorModule();
 
 	// Logs the arguments of the application.
@@ -38,6 +38,7 @@ const int main(const int count, const char ** arguments) {
 		Program * program = compilerState.abstractSyntaxtTree;
 		boolean linkCheck = checkProgram(program->masterBlock);
 		if (linkCheck) {
+			logDebugging(logger, "Generating Output...");
 			generate(&compilerState);
 		}
 		else {
@@ -54,7 +55,7 @@ const int main(const int count, const char ** arguments) {
 
 	logDebugging(logger, "Releasing modules resources...");
 	shutdownGeneratorModule();
-	// shutdownCalculatorModule();
+	shutdownCheckerModule();
 	shutdownAbstractSyntaxTreeModule();
 	shutdownSyntacticAnalyzerModule();
 	shutdownBisonActionsModule();

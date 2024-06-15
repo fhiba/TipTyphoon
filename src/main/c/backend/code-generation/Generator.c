@@ -186,8 +186,8 @@ StylingBlock* stylesToApply = NULL;
 
 void generate(CompilerState * compilerState) {
 	logDebugging(_logger, "Generating final output...");
-	_generatePrologue();
     Program * program = compilerState->abstractSyntaxtTree;
+	_generatePrologue();
 	_generateProgram(program);
 	_generateEpilogue(compilerState->value);
 	logDebugging(_logger, "Generation is done.");
@@ -196,6 +196,7 @@ void generate(CompilerState * compilerState) {
 void _generateProgram(Program * program) {
     if(program == NULL)
         return;
+    logDebugging(_logger, "Generating program output...");
     _generateMasterBlock(program->masterBlock);
 }
 
@@ -211,6 +212,7 @@ void _generateMasterBlock(MasterBlock * master) {
 }
 
 void _generateBlock(Block * block) {
+    logDebugging(_logger, "Generating Block...");
     switch (block->type)
     {
         case H1:
@@ -297,9 +299,11 @@ void _generateBlockQuote(Block * block) {
 }
 
 void _generateHeader(Block * block, int level) {
+    logDebugging(_logger, "Generating Header...");
     _output(0, "%s", "<h");
     _output(0, "%d", level);
     if(stylesToApply != NULL){
+        logDebugging(_logger, "Applying styles to header...");
         _generateStyling(stylesToApply);
         stylesToApply = NULL;
     }

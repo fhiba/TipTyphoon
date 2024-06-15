@@ -1,5 +1,17 @@
 #include "LinkChecker.h"
 
+static Logger * _logger = NULL;
+
+void initializeCheckerModule() {
+	_logger = createLogger("LinkChecker");
+}
+
+void shutdownCheckerModule() {
+	if (_logger != NULL) {
+		destroyLogger(_logger);
+	}
+}
+
 typedef struct HeaderList HeaderList;
 typedef struct LinkList LinkList;
 
@@ -32,18 +44,21 @@ boolean checkProgram(MasterBlock * masterBlock) {
     LinkList * linkList = calloc(1,sizeof(LinkList));
     boolean out = false;
     
-    
+    logDebugging(_logger, "Checking program for valid links...");
     while(masterBlock != NULL && masterBlock->type == MASTER_BLOCK_LIST) {
+        logDebugging(_logger, "Searching in the block list...");
         checkBlock(masterBlock->second, headerList, linkList);
         masterBlock = masterBlock->first;
     }
     if(masterBlock != NULL) {
         checkBlock(masterBlock->block, headerList, linkList);
     }
+    logDebugging(_logger, "Finished checking blocks...");
     
     out = checkLinks(headerList, linkList);
     freeHeaders(headerList);
     freeLinks(linkList);
+    logDebugging(_logger, "Finished checking program...");
     return out;
 }
 
@@ -56,6 +71,7 @@ void storeHeader(char * text, HeaderList * headerList){
     newHeader->header = text;
     newHeader->next = headerList;
     headerList = newHeader;
+    logDebugging(_logger, "Stored Header...");
 }
 
 void storeLink(Text * text, LinkList * linkList){
@@ -65,17 +81,21 @@ void storeLink(Text * text, LinkList * linkList){
     newLink->link = text->link->link;
     newLink->next = linkList;
     linkList = newLink;
+    logDebugging(_logger, "Stored Link...");
 }
 
 boolean checkLinks(HeaderList * headerList, LinkList * linkList){
     LinkList * currentLink = linkList;
     HeaderList * currentHeader = headerList;
-    while(currentLink != NULL){
-        while(currentHeader != NULL){
+    logDebugging(_logger, "Checking Links...");
+    while(currentLink->next != NULL){
+        while(currentHeader->next != NULL){
             if(strcmp(currentLink->link, currentHeader->header) == 0){ //si en la lista lo encuentra, entonces dejo de recorrer los headers y paso al siguiente link
+                logDebugging(_logger, "Found header for link...");
                 break;
             }
             if(currentHeader->next == NULL){ //si llego al final de la lista de headers y no encontro el link, entonces retorno false
+                logDebugging(_logger, "Header missing for link...");
                 return false;
             }
             currentHeader = currentHeader->next;
@@ -83,6 +103,7 @@ boolean checkLinks(HeaderList * headerList, LinkList * linkList){
         currentLink = currentLink->next;
         currentHeader = headerList; //reseteo la lista de headers porque puede estar antes.
     }
+    logDebugging(_logger, "Finished checking links...");
     return true;
 }
 
@@ -115,6 +136,7 @@ void lookForLinksInText(Text * text,LinkList * list) {
             lookForLinksInText(text->child, list);
             break;
         case LINK:
+            logDebugging(_logger, "Found Link...");
             storeLink(text, list);
             break;
     }
@@ -142,12 +164,14 @@ void checkBlock(Block * block, HeaderList * headers, LinkList * links) {
         case H4:
         case H5:
         case H6:
+            logDebugging(_logger, "Processing Header...");
             storeHeader(processText(block->text, links), headers);
             break;
         default:
             break;
     }
     if(block->type != STYLING) {
+        logDebugging(_logger, "Processing all other blocks...");
         lookForLinks(block, links);
     }
 }
@@ -204,10 +228,12 @@ void concatenateRec(Text * text, char * out, int * len, int * allocated, LinkLis
 }
 
 char * processText(Text * text, LinkList * list) {
+    logDebugging(_logger, "Started Processing text...");
     char * out = calloc(BLOCK_SIZE, sizeof(char));
     int allocated = 0;
     int len = 0;
     concatenateRec(text, out, &len, &allocated, list);
+    logDebugging(_logger, "Finished concatenating text...");
     out = realloc(out, len + 1);
     out[len] = '\0';
     return out;
