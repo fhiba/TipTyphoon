@@ -94,7 +94,7 @@ Block * TextBlockSemanticAction(Text * text){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Block * newBlock = calloc(1, sizeof(Block));
 	newBlock->text = text;
-	newBlock->type = TEXT;
+	newBlock->type = SIMPLE;
 	return newBlock;
 }
 

@@ -92,8 +92,8 @@ master_block: block						{$$ = MasterBlockSemanticAction($1);}
 	;
 
 
-stylingBlock: stylingBlock styling		{$$ = UnionStylingBlockSemanticAction($1, $2);}
-			| styling					{$$ = StylingBlockSemanticAction($1);}
+stylingBlock: styling					{$$ = StylingBlockSemanticAction($1);}
+			| stylingBlock styling		{$$ = UnionStylingBlockSemanticAction($1, $2);}
 	;
 
 styling: FS_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, FS);}

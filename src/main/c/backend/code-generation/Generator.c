@@ -1,6 +1,7 @@
 #include "Generator.h"
-
+#include "../domain-specific/LinkChecker.h"
 /* MODULE INTERNAL STATE */
+FILE *file;
 
 const char _indentationCharacter = ' ';
 const char _indentationSize = 4;
@@ -152,14 +153,14 @@ static char * _indentation(const unsigned int level) {
  * Outputs a formatted string to standard output.
  */
 static void _output(const unsigned int indentationLevel, const char * const format, ...) {
-	va_list arguments;
-	va_start(arguments, format);
-	char * indentation = _indentation(indentationLevel);
-	char * effectiveFormat = concatenate(2, indentation, format);
-	vfprintf(stdout, effectiveFormat, arguments);
-	free(effectiveFormat);
-	free(indentation);
-	va_end(arguments);
+    va_list arguments;
+    va_start(arguments, format);
+    char * indentation = _indentation(indentationLevel);
+    char * effectiveFormat = concatenate(2, indentation, format);
+    vfprintf(file, effectiveFormat, arguments);
+    free(effectiveFormat);
+    free(indentation);
+    va_end(arguments);
 }
 
 // /** PUBLIC FUNCTIONS */
@@ -216,30 +217,39 @@ void _generateBlock(Block * block) {
     switch (block->type)
     {
         case H1:
+            logDebugging(_logger, "Generating Header1...");
             _generateHeader(block,1);
             break;
         case H2:
+            logDebugging(_logger, "Generating Header2...");
             _generateHeader(block,2);
             break;
         case H3:
+            logDebugging(_logger, "Generating Header3...");
             _generateHeader(block,3);
             break;
         case H4:
+            logDebugging(_logger, "Generating Header4...");
             _generateHeader(block,4);
             break;
         case H5:
+            logDebugging(_logger, "Generating Header5...");
             _generateHeader(block,5);
             break;
         case H6:
+            logDebugging(_logger, "Generating Header6...");
             _generateHeader(block,6);
             break;
         case BQ:
+            logDebugging(_logger, "Generating BlockQuote...");
             _generateBlockQuote(block);
             break;
         case LIST:
+            logDebugging(_logger, "Generating List...");
             _generateList(block->list);
             break;
         case SIMPLE:
+            logDebugging(_logger, "Generating Simple Block...");
             _generateSimple(block);
             break;
         case STYLING:
@@ -302,6 +312,9 @@ void _generateHeader(Block * block, int level) {
     logDebugging(_logger, "Generating Header...");
     _output(0, "%s", "<h");
     _output(0, "%d", level);
+    char * aux = processText(block->text);
+    _output(0, " id=\"%s\"",aux);
+    free(aux);
     if(stylesToApply != NULL){
         logDebugging(_logger, "Applying styles to header...");
         _generateStyling(stylesToApply);
@@ -327,6 +340,11 @@ void _generateSimple(Block * block) {
 }
 
 void _generatePrologue(){
+    file = fopen("output.html", "w");
+    if (file == NULL) {
+        printf("Error opening file!\n");
+        exit(1);
+    }
     _output(0, "%s", "<!DOCTYPE html>\n");
     _output(0, "%s", "<html>\n");
     _output(0, "%s", "<head>\n");
@@ -339,6 +357,7 @@ void _generatePrologue(){
 void _generateEpilogue(){
     _output(0, "%s", "</body>\n");
     _output(0, "%s", "</html>\n");
+    fclose(file);
     //open file
     //write output to file
     //close file
@@ -354,7 +373,7 @@ void _generateText(Text * text) {
         break;
     case UNION:
         _generateText(text->left);
-        _output(0, "%s", text->string);
+        _output(0, "%s", text->ws);
         _generateText(text->right);
         break;
     case BOLD:
@@ -388,6 +407,7 @@ void _generateLink(Link * link) {
 
 
 void _generateStyle(Styling * style) {
+    logDebugging(_logger, "Generating style %s...",style);
     switch (style->type)
     {
     	case FF:
@@ -407,6 +427,7 @@ void _generateStyle(Styling * style) {
             _output(0, "%s", ";");
             break;
 	    case BC:
+            logDebugging(_logger, "Adding background color...");
             _output(0, "%s", "background-color:");
             _output(0, "%s", style->string);
             _output(0, "%s", ";");
@@ -429,14 +450,17 @@ void _generateStyle(Styling * style) {
 }
 
 void _generateStyling(StylingBlock * styling) {
+    logDebugging(_logger, "Applying style %s...",styling->type);
     _output(0, "%s", " style=\"");
     switch (styling->type)
     {
         case STYLING_BLOCK_LIST:
+            logDebugging(_logger, "Styling Block List");
             _generateStyling(styling->block);
             _generateStyle(styling->styling);
             break;
         case STYLING_BLOCK:
+            logDebugging(_logger, "Styling Block");
             _generateStyle(styling->style);
             break;
     }

@@ -206,7 +206,7 @@ Token EndStylingLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext){
 
 Token BeginLinkLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
-	int  length = lexicalAnalyzerContext->length - 4;
+	int  length = lexicalAnalyzerContext->length - 3;
 	char * helper = calloc(length, sizeof(char));
 	for(int i = 1; i < length; ++i) {
 		helper[i-1] = lexicalAnalyzerContext->lexeme[i];

@@ -32,6 +32,7 @@ Block * TextBlockSemanticAction(Text * text);
 Block * ListBlockSemanticAction(List * list);
 Block * BlockquoteBlockSemanticAction(Text * text);
 Styling * StylingSemanticAction(char * string, StylingType type);
+// Styling * UnionStylingSemanticAction(Styling * first, Styling * second);
 Text * TextSemanticAction(char * string);
 Text * UnionTextSemanticAction(Text* left, char * string, Text * right);
 Text * FormatTextSemanticAction(Text * text, TextType type);

@@ -25,81 +25,97 @@ struct LinkList{
     LinkList * next;
 };
 
-void checkBlock(Block * block, HeaderList * headers, LinkList * list);
-void lookForLinks(Block * block, LinkList * list);
-void storeHeader(char * text, HeaderList * headerList);
-void storeLink(Text * text, LinkList * linkList);
-boolean checkLinks(HeaderList * headerList, LinkList * linkList);
-void freeHeaders(HeaderList * headerList);
-void freeLinks(LinkList * linkList);
-char * processText(Text * text, LinkList * list);
-void lookForLinks(Block * block, LinkList * list);
-void lookForLinksInText(Text * text,LinkList * list);
+void checkBlock(Block * block);
+void lookForLinks(Block * block);
+void storeHeader(char * text);
+void storeLink(Text * text);
+boolean checkLinks();
+void freeHeaders();
+void freeLinks();
+char * processText(Text * text);
+void lookForLinks(Block * block);
+void lookForLinksInText(Text * text);
+HeaderList * headerList;
+LinkList * linkList;
 
 
 //primero guardo todos los headers y los links
 //luego recorro la lista de links chequeando que exista dentro de la lista de headers
 boolean checkProgram(MasterBlock * masterBlock) {
-    HeaderList * headerList = calloc(1,sizeof(HeaderList));
-    LinkList * linkList = calloc(1,sizeof(LinkList));
+    headerList = calloc(1,sizeof(HeaderList));
+    linkList = calloc(1,sizeof(LinkList));
     boolean out = false;
     
     logDebugging(_logger, "Checking program for valid links...");
     while(masterBlock != NULL && masterBlock->type == MASTER_BLOCK_LIST) {
         logDebugging(_logger, "Searching in the block list...");
-        checkBlock(masterBlock->second, headerList, linkList);
+        checkBlock(masterBlock->second);
         masterBlock = masterBlock->first;
     }
     if(masterBlock != NULL) {
-        checkBlock(masterBlock->block, headerList, linkList);
+        checkBlock(masterBlock->block);
     }
     logDebugging(_logger, "Finished checking blocks...");
+    logDebugging(_logger, "ESTE ES MI HEADER %s...",headerList->header);
     
-    out = checkLinks(headerList, linkList);
+    out = checkLinks();
     freeHeaders(headerList);
     freeLinks(linkList);
     logDebugging(_logger, "Finished checking program...");
     return out;
 }
 
-
-
-
-
-void storeHeader(char * text, HeaderList * headerList){
+void storeHeader(char * text){
     HeaderList * newHeader = calloc(1,sizeof(HeaderList));
     newHeader->header = text;
     newHeader->next = headerList;
     headerList = newHeader;
-    logDebugging(_logger, "Stored Header...");
+    logDebugging(_logger, "Stored Header %s...",headerList->header);
 }
 
-void storeLink(Text * text, LinkList * linkList){
-    if(text->link->link[0] != '#')
+char* removeHash(char* str) {
+    if (str[0] == '#') {
+        return str + 1;
+    }
+    return str;
+}
+
+void storeLink(Text * text){
+    if(text->link->link[0] != '#'){
         return;
+    }
     LinkList * newLink = calloc(1,sizeof(LinkList));
-    newLink->link = text->link->link;
+    newLink->link = removeHash(text->link->link);
     newLink->next = linkList;
     linkList = newLink;
     logDebugging(_logger, "Stored Link...");
 }
 
-boolean checkLinks(HeaderList * headerList, LinkList * linkList){
+boolean checkLinks(){
     LinkList * currentLink = linkList;
     HeaderList * currentHeader = headerList;
     logDebugging(_logger, "Checking Links...");
+    if(currentHeader->header == NULL){
+        logDebugging(_logger, "HeaderList is empty %s...",currentHeader->header);
+        return false;
+    }
+    boolean found = false;
     while(currentLink->next != NULL){
+        logDebugging(_logger, "Checking link %s...",currentLink->link);
         while(currentHeader->next != NULL){
+            logDebugging(_logger, "Checking header %s...",currentHeader->header);
             if(strcmp(currentLink->link, currentHeader->header) == 0){ //si en la lista lo encuentra, entonces dejo de recorrer los headers y paso al siguiente link
                 logDebugging(_logger, "Found header for link...");
+                found = true;
                 break;
-            }
-            if(currentHeader->next == NULL){ //si llego al final de la lista de headers y no encontro el link, entonces retorno false
-                logDebugging(_logger, "Header missing for link...");
-                return false;
             }
             currentHeader = currentHeader->next;
         }
+        if(!found){
+            logDebugging(_logger, "Link not found in headers...");
+            return false;
+        }
+        found = false;
         currentLink = currentLink->next;
         currentHeader = headerList; //reseteo la lista de headers porque puede estar antes.
     }
@@ -107,56 +123,59 @@ boolean checkLinks(HeaderList * headerList, LinkList * linkList){
     return true;
 }
 
-void freeHeaders(HeaderList * headerList){
-    if(headerList != NULL){
-        freeHeaders(headerList->next);
-        free(headerList);
+void freeHeaders(HeaderList * headers){
+    logDebugging(_logger, "Freeing Headers...");
+    if(headers != NULL){
+        freeHeaders(headers->next);
+        free(headers->header);
+        free(headers);
     }
 }
 
-void freeLinks(LinkList * linkList){
-    if(linkList != NULL){
-        freeLinks(linkList->next);
-        free(linkList);
+void freeLinks(LinkList * links){
+    logDebugging(_logger, "Freeing Links...");
+    if(links != NULL){
+        freeLinks(links->next);
+        free(links);
     }
 }
 
 
-void lookForLinksInText(Text * text,LinkList * list) {
+void lookForLinksInText(Text * text) {
     switch(text->type) {
         case TEXT:
             break;
 	    case UNION:
-            lookForLinksInText(text->left, list);
-            lookForLinksInText(text->right, list);
+            lookForLinksInText(text->left);
+            lookForLinksInText(text->right);
             break;
 	    case BOLD:
 	    case ITALIC:
 	    case CODE:
-            lookForLinksInText(text->child, list);
+            lookForLinksInText(text->child);
             break;
         case LINK:
             logDebugging(_logger, "Found Link...");
-            storeLink(text, list);
+            storeLink(text);
             break;
     }
 }
 
-void lookForLinks(Block * block, LinkList * list) {
+void lookForLinks(Block * block) {
     switch (block->type)
     {
     case BQ:
     case SIMPLE:
-        lookForLinksInText(block->text, list);
+        lookForLinksInText(block->text);
         break;
     case LIST:
-        lookForLinksInText(block->list->content,list);
+        lookForLinksInText(block->list->content);
         break;
     }
 }
 
 
-void checkBlock(Block * block, HeaderList * headers, LinkList * links) {
+void checkBlock(Block * block) {
     switch(block->type) {
         case H1:
         case H2:
@@ -165,14 +184,14 @@ void checkBlock(Block * block, HeaderList * headers, LinkList * links) {
         case H5:
         case H6:
             logDebugging(_logger, "Processing Header...");
-            storeHeader(processText(block->text, links), headers);
+            storeHeader(processText(block->text));
             break;
         default:
             break;
     }
     if(block->type != STYLING) {
         logDebugging(_logger, "Processing all other blocks...");
-        lookForLinks(block, links);
+        lookForLinks(block);
     }
 }
 
@@ -183,7 +202,7 @@ void concatStr(char * dest, char * src, int len) {
     dest[len] = '\0';
 }
 
-void concatenateRec(Text * text, char * out, int * len, int * allocated, LinkList * list) {
+void concatenateRec(Text * text, char * out, int * len, int * allocated) {
     if(text == NULL) {
         return;
     }
@@ -199,22 +218,22 @@ void concatenateRec(Text * text, char * out, int * len, int * allocated, LinkLis
             *len += textLen;
             break;
         case UNION:
-            concatenateRec(text->left, out, len, allocated,  list);
+            concatenateRec(text->left, out, len, allocated);
             while(*len + 1 > *allocated) {
                 out = realloc(out, *allocated + BLOCK_SIZE);
                 *allocated += BLOCK_SIZE;
             }
             concatStr(out, "-", *len);
             *len += 1;
-            concatenateRec(text->right, out, len, allocated, list);
+            concatenateRec(text->right, out, len, allocated);
             break;
         case BOLD:
         case ITALIC:
         case CODE:
-            concatenateRec(text->child, out, len, allocated, list);
+            concatenateRec(text->child, out, len, allocated);
             break;
         case LINK:
-            storeLink(text, list);
+            storeLink(text);
             char * string = text->link->string;
             textLen = strlen(string);
             while(*len + textLen > *allocated) {
@@ -227,13 +246,14 @@ void concatenateRec(Text * text, char * out, int * len, int * allocated, LinkLis
     }
 }
 
-char * processText(Text * text, LinkList * list) {
+char * processText(Text * text) {
     logDebugging(_logger, "Started Processing text...");
     char * out = calloc(BLOCK_SIZE, sizeof(char));
     int allocated = 0;
     int len = 0;
-    concatenateRec(text, out, &len, &allocated, list);
+    concatenateRec(text, out, &len, &allocated);
     logDebugging(_logger, "Finished concatenating text...");
+    logDebugging(_logger, "out = %s",out);
     out = realloc(out, len + 1);
     out[len] = '\0';
     return out;
