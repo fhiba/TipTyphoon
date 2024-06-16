@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export LOG_IGNORED_LEXEMES=true
+export LOGGING_LEVEL=ALL

@@ -226,3 +226,37 @@ Token BlockquoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext){
 	lexicalAnalyzerContext->semanticValue->token = BLOCKQUOTE_TOKEN;
 	return BLOCKQUOTE_TOKEN;
 }
+
+
+Token FirstOListLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	lexicalAnalyzerContext->semanticValue->integer = 1;
+	return FIRST_TIER_ITEM_ORDERED;
+}
+
+Token FirstListLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	lexicalAnalyzerContext->semanticValue->integer = 1;
+	return FIRST_TIER_ITEM;
+}
+Token SecondOListLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	lexicalAnalyzerContext->semanticValue->integer = 2;
+	return SECOND_TIER_ITEM_ORDERED;
+}
+Token SecondListLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	lexicalAnalyzerContext->semanticValue->integer = 2;
+	return SECOND_TIER_ITEM;
+}
+
+Token ThirdOListLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	lexicalAnalyzerContext->semanticValue->integer = 3;
+	return THIRD_TIER_ITEM_ORDERED;
+}
+Token ThirdListLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
+	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
+	lexicalAnalyzerContext->semanticValue->integer = 3;
+	return THIRD_TIER_ITEM;
+}

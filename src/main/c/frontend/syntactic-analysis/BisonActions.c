@@ -166,13 +166,13 @@ List * ListSemanticAction(int tabCount, Text * text, ListType type){
 }
 
 
-Block * ListBlockSemanticAction(List * list) {
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	Block * newBlock = calloc(1, sizeof(Block));
-	newBlock->list = list;
-	newBlock->type = LIST;
-	return newBlock;
-}
+// Block * ListBlockSemanticAction(List * list) {
+// 	_logSyntacticAnalyzerAction(__FUNCTION__);
+// 	Block * newBlock = calloc(1, sizeof(Block));
+// 	newBlock->list = list;
+// 	newBlock->type = LIST;
+// 	return newBlock;
+// }
 
 Text * LinkSemanticAction(char * string, char * link){
 	_logSyntacticAnalyzerAction(__FUNCTION__);
@@ -207,3 +207,222 @@ StylingBlock * StylingBlockSemanticAction(Styling * styling){
 	out->type = STYLING_BLOCK;
 	return out;
 }
+
+
+Block * FirstTierNodeBlockSemanticAction(FirstTierNode * node) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Block * newBlock = calloc(1, sizeof(Block));
+	newBlock->list = node;
+	newBlock->type = LIST;
+	return newBlock;
+}
+Block * ListBlockSemanticAction(FirstTList * list) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	Block * newBlock = calloc(1, sizeof(Block));
+	newBlock->list = list;
+	newBlock->type = LIST;
+	return newBlock;
+
+}
+
+FirstTList * FirstTOrderedListSemanticAction(FirstTNodeOrdered * node) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	FirstTList * list = calloc(1, sizeof(FirstTList));
+	list->type = OL;
+	list->ordered = node;
+	return list;
+}
+FirstTList * FirstTUnorderedListSemanticAction(FirstTNodeUnordered * node) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	FirstTList * list = calloc(1, sizeof(FirstTList));
+	list->type = UL;
+	list->unordered = node;
+	return list;
+}
+FirstTNodeOrdered * FirstTNodeOrderedSemanticAction(FirstTItemOrdered * item) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	FirstTNodeOrdered * node = calloc(1, sizeof(FirstTNodeOrdered));
+	node->type = LEAF;
+	node->item = item;
+	return node;
+}
+FirstTNodeOrdered * FirstTNodeOrderedAppendSemanticAction(FirstTNodeOrdered * node, FirstTItemOrdered * item) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	FirstTNodeOrdered * newNode = calloc(1, sizeof(FirstTNodeOrdered));
+	newNode->type = NODE;
+	newNode->node = node;
+	newNode->appended = item;
+	return newNode;
+}
+FirstTNodeUnordered * FirstTNodeUnorderedSemanticAction(FirstTItemUnordered * item) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	FirstTNodeUnordered * node = calloc(1, sizeof(FirstTNodeUnordered));
+	node->type = LEAF;
+	node->item = item;
+	return node;
+}
+FirstTNodeUnordered * FirstTNodeUnorderedAppendSemanticAction(FirstTNodeUnordered * node, FirstTItemUnordered * item) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	FirstTNodeUnordered * newNode = calloc(1, sizeof(FirstTNodeUnordered));
+	newNode->type = NODE;
+	newNode->node = node;
+	newNode->appended = item;
+	return newNode;
+}
+FirstTItemOrdered * FirstTItemOrderedSemanticAction(Text * text) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	FirstTItemOrdered * item = calloc(1, sizeof(FirstTItemOrdered));
+	item->text = text;
+	item->type = ITEM;
+	return item;
+}
+FirstTItemOrdered * SecondTListToOrderedSemanticAction(SecondTList * node) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	FirstTItemOrdered * item = calloc(1, sizeof(FirstTItemOrdered));
+	item->type = LIST_ITEM;
+	item->list = node;
+	return item;
+}
+FirstTItemUnordered * FirstTItemUnorderedSemanticAction(Text * text) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	FirstTItemUnordered * item = calloc(1, sizeof(FirstTItemUnordered));
+	item->text = text;
+	item->type = ITEM;
+	return item;
+}
+FirstTItemUnordered * SecondTListToUnorderedSemanticAction(SecondTList * node) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	FirstTItemUnordered * item = calloc(1, sizeof(FirstTItemUnordered));
+	item->type = LIST_ITEM;
+	item->list = node;
+	return item;
+}
+SecondTList * SecondTOrderedListSemanticAction(SecondTNodeOrdered * node) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	SecondTList * list = calloc(1, sizeof(SecondTList));
+	list->type = OL;
+	list->ordered = node;
+	return list;
+}
+SecondTList * SecondTUnorderedListSemanticAction(SecondTNodeUnordered * node) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	SecondTList * list = calloc(1, sizeof(SecondTList));
+	list->type = UL;
+	list->unordered = node;
+	return list;
+}
+SecondTNodeOrdered * SecondTNodeOrderedSemanticAction(SecondTItemOrdered * item) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	SecondTNodeOrdered * node = calloc(1, sizeof(SecondTNodeOrdered));
+	node->type = LEAF;
+	node->item = item;
+	return node;
+}
+SecondTNodeOrdered * SecondTNodeOrderedAppendSemanticAction(SecondTNodeOrdered * node, SecondTItemOrdered * item) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	SecondTNodeOrdered * newNode = calloc(1, sizeof(SecondTNodeOrdered));
+	newNode->type = NODE;
+	newNode->node = node;
+	newNode->appended = item;
+	return newNode;
+}
+SecondTNodeUnordered * SecondTNodeUnorderedSemanticAction(SecondTItemUnordered * item) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	SecondTNodeUnordered * node = calloc(1, sizeof(SecondTNodeUnordered));
+	node->type = LEAF;
+	node->item = item;
+	return node;
+}
+SecondTNodeUnordered * SecondTNodeUnorderedAppendSemanticAction(SecondTNodeUnordered * node, SecondTItemUnordered * item) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	SecondTNodeUnordered * newNode = calloc(1, sizeof(SecondTNodeUnordered));
+	newNode->type = NODE;
+	newNode->node = node;
+	newNode->appended = item;
+	return newNode;
+}
+SecondTItemOrdered * SecondTItemOrderedSemanticAction(Text * text) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	SecondTItemOrdered * item = calloc(1, sizeof(SecondTItemOrdered));
+	item->text = text;
+	item->type = ITEM;
+	return item;
+}
+SecondTItemOrdered * ThirdTListToOrderedSemanticAction(ThirdTList * node) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	SecondTItemOrdered * item = calloc(1, sizeof(SecondTItemOrdered));
+	item->type = LIST_ITEM;
+	item->list = node;
+	return item;
+}
+SecondTItemUnordered * SecondTItemUnorderedSemanticAction(Text * text) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	SecondTItemUnordered * item = calloc(1, sizeof(SecondTItemUnordered));
+	item->text = text;
+	item->type = ITEM;
+	return item;
+}
+SecondTItemUnordered * ThirdTListToUnorderedSemanticAction(ThirdTList * node) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	SecondTItemUnordered * item = calloc(1, sizeof(SecondTItemUnordered));
+	item->type = LIST_ITEM;
+	item->list = node;
+	return item;
+}
+ThirdTList * ThirdTOrderedListSemanticAction(ThirdTNodeOrdered * node) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	ThirdTList * list = calloc(1, sizeof(ThirdTList));
+	list->type = OL;
+	list->ordered = node;
+	return list;
+}
+ThirdTList * ThirdTUnorderedListSemanticAction(ThirdTNodeUnordered * node) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	ThirdTList * list = calloc(1, sizeof(ThirdTList));
+	list->type = UL;
+	list->unordered = node;
+	return list;
+}
+ThirdTNodeOrdered * ThirdTNodeOrderedSemanticAction(ThirdTItemOrdered * item) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	ThirdTNodeOrdered * node = calloc(1, sizeof(ThirdTNodeOrdered));
+	node->type = LEAF;
+	node->item = item;
+	return node;
+}
+ThirdTNodeOrdered * ThirdTNodeOrderedAppendSemanticAction(ThirdTNodeOrdered * node, ThirdTItemOrdered * item) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	ThirdTNodeOrdered * newNode = calloc(1, sizeof(ThirdTNodeOrdered));
+	newNode->type = NODE;
+	newNode->node = node;
+	newNode->appended = item;
+	return newNode;
+}
+ThirdTNodeUnordered * ThirdTNodeUnorderedSemanticAction(ThirdTItemUnordered * item) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	ThirdTNodeUnordered * node = calloc(1, sizeof(ThirdTNodeUnordered));
+	node->type = LEAF;
+	node->item = item;
+	return node;
+}
+ThirdTNodeUnordered * ThirdTNodeUnorderedAppendSemanticAction(ThirdTNodeUnordered * node, ThirdTItemUnordered * item) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	ThirdTNodeUnordered * newNode = calloc(1, sizeof(ThirdTNodeUnordered));
+	newNode->type = NODE;
+	newNode->node = node;
+	newNode->appended = item;
+	return newNode;
+}
+ThirdTItemOrdered * ThirdTItemOrderedSemanticAction(Text * text) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	ThirdTItemOrdered * item = calloc(1, sizeof(ThirdTItemOrdered));
+	item->text = text;
+	return item;
+}
+ThirdTItemUnordered * ThirdTItemUnorderedSemanticAction(Text * text) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	ThirdTItemUnordered * item = calloc(1, sizeof(ThirdTItemUnordered));
+	item->text = text;
+	return item;
+}
+

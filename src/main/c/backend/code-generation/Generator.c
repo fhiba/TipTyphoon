@@ -170,23 +170,39 @@ void _generatePrologue();
 void _generateMasterBlock(MasterBlock * master);
 void _generateHeader(Block * block, int level);
 void _generateBlockQuote(Block * block);
-void _generateList(List * list);
+void _openList(ListType type);
+void _closeList(ListType type);
+void _generateList(FirstTList * list);
 void _generateSimple(Block * block);
-void _generateOrderedList(List * list);
 void _generateLink(Link * link);
 void _generateText(Text * text);
 void _generateBlock(Block * block);
 void _generateStyling(StylingBlock * styling);
 void _generateStyle(Styling * style);
 void _generateUnorderedList(List * list);
-
+void outputTypeEnd(ListType type);
 
 StylingBlock* stylesToApply = NULL;
 
 
 
+ListTypeNode * insertIntoList(ListTypeNode * head, ListType type) {
+    ListTypeNode * newNode = (ListTypeNode *) calloc(1, sizeof(ListTypeNode));
+    newNode->type = type;
+    newNode->next = head;
+    return newNode;
+}
+
+ListTypeNode * removeHead(ListTypeNode * head) {
+    ListTypeNode * aux = head;
+    head = head->next;
+    free(aux);
+    return head;
+}
+
+
 void generate(CompilerState * compilerState) {
-	logDebugging(_logger, "Generating final output...");
+    logDebugging(_logger, "Generating final output...");
     Program * program = compilerState->abstractSyntaxtTree;
 	_generatePrologue();
 	_generateProgram(program);
@@ -258,44 +274,206 @@ void _generateBlock(Block * block) {
     }
 }
 
-void _generateUnorderedList(List * list) {
-    _output(0, "%s", "<ul");
-    if(stylesToApply != NULL){
-        _generateStyling(stylesToApply);
-        stylesToApply = NULL;
-    }
-    _output(0, "%s", ">\n");
-     _output(0, "%s", "<li>\n");
-    _generateText(list->content);
-    _output(0, "%s", "</li>\n");
-    _output(0, "%s", "</ul>\n");
+
+void _generateThirdTItem(void * item) {
+    logDebugging(_logger, "Generating Third Tier Item...");
+    _output(0, "<li>");
+    _generateText(((ThirdTItemUnordered*)item)->text);
+    _output(0, "</li>\n");
 }
 
-void _generateOrderedList(List * list) {
-    _output(0, "%s", "<ol");
-    if(stylesToApply != NULL){
-        _generateStyling(stylesToApply);
-        stylesToApply = NULL;
+
+void _generateThirdTNode(void * node) {
+    logDebugging(_logger, "Generating Third Tier Node...");
+    switch (((ThirdTNodeOrdered*)node)->type)
+    {
+    case NODE:
+        _generateThirdTNode(((ThirdTNodeOrdered*)node)->node);
+        _generateThirdTItem(((ThirdTNodeOrdered*)node)->appended);
+        break;
+    case LEAF:
+        _generateThirdTItem(((ThirdTNodeOrdered*)node)->item);
+        break;
+    default:
+        break;
     }
-    _output(0, "%s", ">\n");
-    _output(0, "%s", "<li>\n");
-    _generateText(list->content);
-    _output(0, "%s", "</li>\n");
-    _output(0, "%s", "</ol>\n");
 }
 
-void _generateList(List * list) {
+void _generateThirdTList(ThirdTList * list) {
+    logDebugging(_logger, "Generating Third Tier List...");
     switch (list->type)
     {
-        case UL:
-            _generateUnorderedList(list);
-            break;
-        case OL:
-            _generateOrderedList(list);
-            break;
+    case UL:
+        logDebugging(_logger, "Generating Unordered List...");
+        _openList(UL);
+        _generateThirdTNode(list->ordered);
+        _closeList(UL);
+        break;
+    case OL:
+        logDebugging(_logger, "Generating Ordered List...");
+        _openList(OL);
+        _generateThirdTNode(list->unordered);
+        _closeList(OL);
+        break;
+    default:
+        logCritical(_logger, "Unknown list type: %d", list->type);
+        break;
     }
 }
 
+void _generateSecondTItem(void *item)
+{
+    logDebugging(_logger, "Generating Second Tier Item...");
+    _output(0, "<li>");
+    switch (((SecondTItemOrdered *)item)->type)
+    {
+    case ITEM:
+        _generateText(((SecondTItemOrdered *)item)->text);
+        break;
+    case LIST_ITEM:
+        _generateThirdTList(((SecondTItemOrdered *)item)->list);
+        break;
+    default:
+        break;
+    }
+    _output(0, "</li>\n");
+}
+
+void _generateSecondTNode(void * node) {
+    logDebugging(_logger, "Generating Second Tier Node...");
+    switch (((SecondTNodeOrdered*)node)->type)
+    {
+    case NODE:
+        _generateSecondTNode(((SecondTNodeOrdered*)node)->node);
+        _generateSecondTItem(((SecondTNodeOrdered*)node)->appended);
+        break;
+    case LEAF:
+        _generateSecondTItem(((SecondTNodeOrdered*)node)->item);
+        break;
+    default:
+        break;
+    }
+}
+
+void _generateSecondTList(SecondTList * list) {
+    logDebugging(_logger, "Generating Second Tier List...");
+    switch (list->type)
+    {
+    case UL:
+        logDebugging(_logger, "Generating Unordered List...");
+        _openList(UL);
+        _generateSecondTNode(list->ordered);
+        _closeList(UL);
+        break;
+    case OL:
+        logDebugging(_logger, "Generating Ordered List...");
+        _openList(OL);
+        _generateSecondTNode(list->unordered);
+        _closeList(OL);
+        break;
+    default:
+        logCritical(_logger, "Unknown list type: %d", list->type);
+        break;
+    }
+}
+
+void _generateFirstTItem(void *item)
+{
+    logDebugging(_logger, "Generating First Tier Item...");
+    _output(0, "<li>");
+    switch (((FirstTItemOrdered *)item)->type)
+    {
+    case ITEM:
+
+        _generateText(((FirstTItemOrdered *)item)->text);
+
+        break;
+    case LIST_ITEM:
+        _generateSecondTList(((FirstTItemOrdered *)item)->list);
+        break;
+    default:
+        break;
+    }
+    _output(0, "</li>\n");
+}
+
+void _generateFirstTNode(void * node) {
+    logDebugging(_logger, "Generating First Tier Node...");
+    switch (((FirstTNodeOrdered*)node)->type)
+    {
+    case NODE:
+        _generateFirstTNode(((FirstTNodeOrdered*)node)->node);
+        _generateFirstTItem(((FirstTNodeOrdered*)node)->appended);
+        break;
+    case LEAF:
+        _generateFirstTItem(((FirstTNodeOrdered*)node)->item);
+        break;
+    default:
+        break;
+    }
+}
+
+void _generateList(FirstTList * list) {
+    logDebugging(_logger, "Generating List...");
+    switch (list->type)
+    {
+    case UL:
+        logDebugging(_logger, "Generating Unordered List...");
+        _openList(UL);
+        _generateFirstTNode(list->ordered);
+        _closeList(UL);
+        break;
+    case OL:
+        logDebugging(_logger, "Generating Ordered List...");
+        _openList(OL);
+        _generateFirstTNode(list->unordered);
+        _closeList(OL);
+        break;
+    default:
+        logCritical(_logger, "Unknown list type: %d", list->type);
+        break;
+    }
+}
+
+void _openList(ListType type) {
+    switch (type)
+    {
+    case UL:
+        _output(0, "<ul");
+        if (stylesToApply != NULL)
+        {
+            _generateStyling(stylesToApply);
+            stylesToApply = NULL;
+        }
+        _output(0, ">\n");
+        break;
+    case OL:
+        _output(0, "<ol");
+        if (stylesToApply != NULL)
+        {
+            _generateStyling(stylesToApply);
+            stylesToApply = NULL;
+        }
+        _output(0, ">\n");
+        break;
+    default:
+        break;
+    }
+}
+void _closeList(ListType type) {
+    switch (type)
+    {
+    case UL:
+        _output(0, "</ul>\n");
+        break;
+    case OL:
+        _output(0, "</ol>\n");
+        break;
+    default:
+        break;
+    }
+
+}
 
 void _generateBlockQuote(Block * block) {
     _output(0, "%s", "<blockquote");

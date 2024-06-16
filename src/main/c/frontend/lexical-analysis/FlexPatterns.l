@@ -54,9 +54,13 @@ StylingString \"([[:alnum:]]{+}[ ])+\"
 URI "http"("s")?"://"[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}("/"[^\s]*)?|#([[:graph:]]{-}[[:upper:][:space:]])+ 
 %%
 
-^{BlockQuote}                                                               {return BlockquoteLexemeAction(createLexicalAnalyzerContext());}                                
-^"    "+{OrderedList}|(\t)+{OrderedList}|{OrderedList}                      {return ListLexemeAction(createLexicalAnalyzerContext());}   
-^"    "+{List}|(\t)+{List}|{List}                                           {return ListLexemeAction(createLexicalAnalyzerContext());}
+^{BlockQuote}                                                               {return BlockquoteLexemeAction(createLexicalAnalyzerContext());}
+^{List}                                                                     {return FirstListLexemeAction(createLexicalAnalyzerContext());}                               
+^{OrderedList}                                                              {return FirstOListLexemeAction(createLexicalAnalyzerContext());}
+^"    "{List}|(\t){List}|{List}                                            {return SecondListLexemeAction(createLexicalAnalyzerContext());}
+^"    "{OrderedList}|(\t){OrderedList}                       {return SecondOListLexemeAction(createLexicalAnalyzerContext());}
+^"    "{2}{List}|(\t){2}{List}                                      {return ThirdListLexemeAction(createLexicalAnalyzerContext());}
+^"    "{3,}{OrderedList}|(\t){3,}{OrderedList}         {return ThirdOListLexemeAction(createLexicalAnalyzerContext());}
 ^{comment}.*$                                                               {IgnoredLexemeAction(createLexicalAnalyzerContext());}
 ^{TipStyling}                                                               {BEGIN(styling); return BeginStylingLexemeAction(createLexicalAnalyzerContext());}
 <styling>{UnderlineColour}                                                  {BEGIN(styling_color); return UCTokenLexemeAction(createLexicalAnalyzerContext());}

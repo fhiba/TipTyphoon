@@ -161,6 +161,155 @@ void lookForLinksInText(Text * text) {
     }
 }
 
+void lookForLinksInThirdTList(ThirdTList *list) {
+    if(list == NULL) {
+        return;
+    }
+    switch (list->type)
+    {
+    case UL:
+        lookForLinksInThirdTNode(list->unordered);
+    case OL:
+        lookForLinksInThirdTNode(list->ordered);
+        break;
+    }
+}
+
+
+void lookForLinksInThirdTItem(void * item) {
+    if(item == NULL) {
+        return;
+    }
+
+    lookForLinksInText(((ThirdTItemOrdered*)item)->text);
+}
+
+void lookForLinksInThirdTNode(void * node) {
+    if(node == NULL) {
+        return;
+    }
+    switch (((ThirdTNodeOrdered*)node)->type)
+    {
+    case NODE:
+        lookForLinksInThirdTNode(((ThirdTNodeOrdered*)node)->node);
+        lookForLinksInThirdTItem(((ThirdTNodeOrdered*)node)->appended);
+        break;
+    case LEAF:
+        lookForLinksInThirdTItem(((ThirdTNodeOrdered*)node)->item);
+        break;
+    default:
+        logCritical(_logger, "Invalid ThirdTNode type");
+        break;
+    }
+}
+
+void lookForLinksInSecondTItem(void * item) {
+    if(item == NULL) {
+        return;
+    }
+    switch (((SecondTItemOrdered*)item)->type)
+    {
+    case ITEM:
+        lookForLinksInText(((SecondTItemOrdered*)item)->text);
+        break;
+    case LIST_ITEM:
+        lookForLinksInThirdTList(((SecondTItemOrdered*)item)->list);
+        break;
+    default:
+        logCritical(_logger, "Invalid FirstTItem type");
+        break;
+    }
+
+}
+
+
+void lookForLinksInSecondTNode(void * node) {
+    if(node == NULL) {
+        return;
+    }
+    switch (((SecondTNodeOrdered*)node)->type)
+    {
+    case NODE:
+        lookForLinksInSecondTNode(((SecondTNodeOrdered*)node)->node);
+        lookForLinksInSecondTItem(((SecondTNodeOrdered*)node)->appended);
+        break;
+    case LEAF:
+        lookForLinksInSecondTItem(((SecondTNodeOrdered*)node)->item);
+        break;
+    default:
+        logCritical(_logger, "Invalid SecondTNode type");
+        break;
+    }
+}
+
+
+void lookForLinksInSecondTList(SecondTList * list) {
+    if(list == NULL) {
+        return;
+    }
+    switch (list->type)
+    {
+    case UL:
+        lookForLinksInSecondTNode(list->unordered);
+    case OL:
+        lookForLinksInSecondTNode(list->ordered);
+        break;
+    }
+}
+
+void lookForLinksInFirstTItem(void * item) {
+    if(item == NULL) {
+        return;
+    }
+    switch (((FirstTItemOrdered*)item)->type)
+    {
+    case ITEM:
+        lookForLinksInText(((FirstTItemOrdered*)item)->text);
+        break;
+    case LIST_ITEM:
+        lookForLinksInSecondTList(((FirstTItemOrdered*)item)->list);
+        break;
+    default:
+        logCritical(_logger, "Invalid FirstTItem type");
+        break;
+    }
+
+}
+
+void lookForLinksInFirstTNode(void * node) {
+    if(node == NULL) {
+        return;
+    }
+    switch (((FirstTNodeOrdered*)node)->type)
+    {
+    case NODE:
+        lookForLinksInFirstTNode(((FirstTNodeOrdered*)node)->node);
+        lookForLinksInFirstTierItem(((FirstTNodeOrdered*)node)->appended);
+        break;
+    case LEAF:
+        lookForLinksInFirstTierItem(((FirstTNodeOrdered*)node)->item);
+        break;
+    default:
+        logCritical(_logger, "Invalid FirstTNode type");
+        break;
+    }
+}
+
+
+void lookForLinksInList(FirstTList * list) {
+    if(list == NULL) {
+        return;
+    }
+    switch (list->type)
+    {
+        case UL:
+            lookForLinksInFirstTNode(list->unordered);
+        case OL:
+            lookForLinksInFirstTNode(list->ordered);
+            break;
+    }
+}
+
 void lookForLinks(Block * block) {
     switch (block->type)
     {
@@ -169,7 +318,7 @@ void lookForLinks(Block * block) {
         lookForLinksInText(block->text);
         break;
     case LIST:
-        lookForLinksInText(block->list->content);
+        lookForLinksInList(block->list);
         break;
     }
 }
@@ -186,12 +335,12 @@ void checkBlock(Block * block) {
             logDebugging(_logger, "Processing Header...");
             storeHeader(processText(block->text));
             break;
-        default:
+        case STYLING:
             break;
-    }
-    if(block->type != STYLING) {
-        logDebugging(_logger, "Processing all other blocks...");
-        lookForLinks(block);
+        default:
+            logDebugging(_logger, "Looking for link in other type blocks...");
+            lookForLinks(block);
+            break;
     }
 }
 
