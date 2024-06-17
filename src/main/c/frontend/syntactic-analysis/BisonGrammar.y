@@ -68,6 +68,13 @@
 %token <token> END_LINK
 %token <token> BLOCKQUOTE_TOKEN
 
+%token <token> THIRD_TIER_ITEM
+%token <token> SECOND_TIER_ITEM
+%token <token> FIRST_TIER_ITEM
+%token <token> THIRD_TIER_ITEM_ORDERED
+%token <token> SECOND_TIER_ITEM_ORDERED
+%token <token> FIRST_TIER_ITEM_ORDERED
+
 
 %token <token> UNKNOWN
 
@@ -105,12 +112,12 @@ styling: FS_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction(
 	| P_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, P);}
 	;
 	
-block:  H1_TOKEN text							{$$ = HeaderBlockSemanticAction($2,1);}
-	| H2_TOKEN text    						{$$ = HeaderBlockSemanticAction($2,2);}
-	| H3_TOKEN text							{$$ = HeaderBlockSemanticAction($2,3);}
-	| H4_TOKEN text	    					{$$ = HeaderBlockSemanticAction($2,4);}
-	| H5_TOKEN text 							{$$ = HeaderBlockSemanticAction($2,5);}
-	| H6_TOKEN text 							{$$ = HeaderBlockSemanticAction($2,6);}
+block:  H1_TOKEN text							{$$ = HeaderBlockSemanticAction($2,H1);}
+	| H2_TOKEN text    						{$$ = HeaderBlockSemanticAction($2,H2);}
+	| H3_TOKEN text							{$$ = HeaderBlockSemanticAction($2,H3);}
+	| H4_TOKEN text	    					{$$ = HeaderBlockSemanticAction($2,H4);}
+	| H5_TOKEN text 							{$$ = HeaderBlockSemanticAction($2,H5);}
+	| H6_TOKEN text 							{$$ = HeaderBlockSemanticAction($2,H6);}
 	| BEGIN_STYLING stylingBlock END_STYLING	{$$ = BlockStylingBlockSemanticAction($2);}
 	| BLOCKQUOTE_TOKEN text					{$$ = BlockquoteBlockSemanticAction($2);}
 	| text                                     {$$ = TextBlockSemanticAction($1);}
@@ -118,8 +125,12 @@ block:  H1_TOKEN text							{$$ = HeaderBlockSemanticAction($2,1);}
 	;
 
 
-list: ORDERED_LIST text							{$$ = ListSemanticAction($1, $2, OL);}
-	| UNORDERED_LIST text						    {$$ = ListSemanticAction($1, $2, UL);}
+list: FIRST_TIER_ITEM text							{$$ = ListSemanticAction( $2, UL, DEPTH_1);}
+	| SECOND_TIER_ITEM text							{$$ = ListSemanticAction( $2, UL, DEPTH_2);}
+	| THIRD_TIER_ITEM text							{$$ = ListSemanticAction( $2, UL, DEPTH_3);}
+	| FIRST_TIER_ITEM_ORDERED text					{$$ = ListSemanticAction( $2, OL, DEPTH_1);}
+	| SECOND_TIER_ITEM_ORDERED text					{$$ = ListSemanticAction( $2, OL, DEPTH_2);}
+	| THIRD_TIER_ITEM_ORDERED text					{$$ = ListSemanticAction( $2, OL, DEPTH_3);}
 	;
 
 text: text WS text                              {$$ = UnionTextSemanticAction($1, $2, $3);}

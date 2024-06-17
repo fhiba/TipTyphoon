@@ -42,9 +42,9 @@ LinkList * linkList;
 //primero guardo todos los headers y los links
 //luego recorro la lista de links chequeando que exista dentro de la lista de headers
 boolean checkProgram(MasterBlock * masterBlock) {
-    headerList = calloc(1,sizeof(HeaderList));
-    linkList = calloc(1,sizeof(LinkList));
-    boolean out = false;
+    headerList = NULL;
+    linkList = NULL;
+    boolean out = true;
     
     logDebugging(_logger, "Checking program for valid links...");
     while(masterBlock != NULL && masterBlock->type == MASTER_BLOCK_LIST) {
@@ -56,12 +56,11 @@ boolean checkProgram(MasterBlock * masterBlock) {
         checkBlock(masterBlock->block);
     }
     logDebugging(_logger, "Finished checking blocks...");
-    logDebugging(_logger, "ESTE ES MI HEADER %s...",headerList->header);
-    
-    out = checkLinks();
+    if(linkList != NULL)
+        out = checkLinks();
     freeHeaders(headerList);
     freeLinks(linkList);
-    logDebugging(_logger, "Finished checking program...");
+    logDebugging(_logger, "Finished checking program %s...", out ? "successfully" : "with errors");
     return out;
 }
 
@@ -95,14 +94,15 @@ boolean checkLinks(){
     LinkList * currentLink = linkList;
     HeaderList * currentHeader = headerList;
     logDebugging(_logger, "Checking Links...");
-    if(currentHeader->header == NULL){
-        logDebugging(_logger, "HeaderList is empty %s...",currentHeader->header);
+    if(currentHeader == NULL){
+        logDebugging(_logger, "HeaderList is empty...");
         return false;
     }
+    
     boolean found = false;
-    while(currentLink->next != NULL){
+    while(currentLink != NULL){
         logDebugging(_logger, "Checking link %s...",currentLink->link);
-        while(currentHeader->next != NULL){
+        while(currentHeader != NULL){
             logDebugging(_logger, "Checking header %s...",currentHeader->header);
             if(strcmp(currentLink->link, currentHeader->header) == 0){ //si en la lista lo encuentra, entonces dejo de recorrer los headers y paso al siguiente link
                 logDebugging(_logger, "Found header for link...");
@@ -124,8 +124,8 @@ boolean checkLinks(){
 }
 
 void freeHeaders(HeaderList * headers){
-    logDebugging(_logger, "Freeing Headers...");
     if(headers != NULL){
+        logDebugging(_logger, "Freeing Headers...");
         freeHeaders(headers->next);
         free(headers->header);
         free(headers);
@@ -133,8 +133,8 @@ void freeHeaders(HeaderList * headers){
 }
 
 void freeLinks(LinkList * links){
-    logDebugging(_logger, "Freeing Links...");
     if(links != NULL){
+        logDebugging(_logger, "Freeing Links...");
         freeLinks(links->next);
         free(links);
     }

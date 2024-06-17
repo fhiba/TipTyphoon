@@ -20,6 +20,7 @@ typedef enum StylingType StylingType;
 typedef enum StylingBlockType StylingBlockType;
 typedef enum SublistType SublistType;
 typedef enum ListType ListType;
+typedef enum ListDepth ListDepth;
 typedef enum TextType TextType;
 
 
@@ -41,6 +42,12 @@ typedef struct StylingBlock StylingBlock;
 /**
  * Node types for the Abstract Syntax Tree (AST).
  */
+
+enum ListDepth {
+	DEPTH_1,
+	DEPTH_2,
+	DEPTH_3
+};
 
 enum StylingBlockType {
 	STYLING_BLOCK,
@@ -103,8 +110,8 @@ struct StylingBlock {
 
 struct List{
 	Text * content;
-	int tabCount;
 	ListType type;
+	ListDepth depth;
 };
 
 

@@ -26,7 +26,7 @@ MasterBlock * MasterBlockSemanticAction(Block * block);
 MasterBlock * UnionMasterBlockSemanticAction(MasterBlock * first, Block * second);
 StylingBlock * UnionStylingBlockSemanticAction(StylingBlock * block, Styling * styling);
 StylingBlock * StylingBlockSemanticAction(Styling * styling);
-Block * HeaderBlockSemanticAction(Text * text, int number);
+Block * HeaderBlockSemanticAction(Text * text, BlockType type);
 Block * BlockStylingBlockSemanticAction(StylingBlock * block);
 Block * TextBlockSemanticAction(Text * text);
 Block * ListBlockSemanticAction(List * list);
@@ -36,7 +36,7 @@ Styling * StylingSemanticAction(char * string, StylingType type);
 Text * TextSemanticAction(char * string);
 Text * UnionTextSemanticAction(Text* left, char * string, Text * right);
 Text * FormatTextSemanticAction(Text * text, TextType type);
-List * ListSemanticAction(int tabCount, Text * text, ListType type);
+List * ListSemanticAction( Text * text, ListType type, ListDepth depth);
 Text * LinkSemanticAction(char * string, char * link);
 
 #endif

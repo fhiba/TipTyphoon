@@ -62,31 +62,11 @@ MasterBlock * UnionMasterBlockSemanticAction(MasterBlock * first, Block * second
 	return newMasterBlock;
 }
 
-Block * HeaderBlockSemanticAction(Text * text, int number) {
+Block * HeaderBlockSemanticAction(Text * text, BlockType type) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Block * newBlock = calloc(1, sizeof(Block));
 	newBlock->text = text;
-	switch (number)
-	{
-	case 1:
-		newBlock->type = H1;
-		break;
-	case 2:
-		newBlock->type = H2;
-		break;
-	case 3:
-		newBlock->type = H3;
-		break;
-	case 4:
-		newBlock->type = H4;
-		break;
-	case 5:
-		newBlock->type = H5;
-		break;
-	default:
-		newBlock->type = H6;
-		break;
-	}
+	newBlock->type = type;
 	return newBlock;
 }
 
@@ -146,8 +126,6 @@ Text * UnionTextSemanticAction(Text * left, char * ws, Text * right) {
 	return out;
 }
 
-
-
 Text * FormatTextSemanticAction(Text * text, TextType type) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
 	Text * newText = calloc(1, sizeof(Text));
@@ -155,16 +133,6 @@ Text * FormatTextSemanticAction(Text * text, TextType type) {
 	newText->child = text;
 	return newText;
 }
-
-List * ListSemanticAction(int tabCount, Text * text, ListType type){
-	_logSyntacticAnalyzerAction(__FUNCTION__);
-	List * list = calloc(1, sizeof(List));
-	list->content = text;
-	list->tabCount = tabCount;
-	list->type = type;
-	return list;
-}
-
 
 Block * ListBlockSemanticAction(List * list) {
 	_logSyntacticAnalyzerAction(__FUNCTION__);
@@ -208,4 +176,13 @@ StylingBlock * StylingBlockSemanticAction(Styling * styling){
 	out->styling = styling;
 	out->type = STYLING_BLOCK;
 	return out;
+}
+
+List * ListSemanticAction( Text * text, ListType type, ListDepth depth) {
+	_logSyntacticAnalyzerAction(__FUNCTION__);
+	List * list = calloc(1, sizeof(List));
+	list->content = text;
+	list->type = type;
+	list->depth = depth;
+	return list;
 }
