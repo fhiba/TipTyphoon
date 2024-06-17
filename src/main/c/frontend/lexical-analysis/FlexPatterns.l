@@ -50,6 +50,7 @@ Boolean true|false
 PositionValue left|right|center
 Size [0-9]+px
 EndStyling ";"
+Fonts Arial|Sans-serif|Serif|Monospace|Cursive|Fantasy
 StylingString \"([[:alnum:]]{+}[ ])+\"
 URI "http"("s")?"://"[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}("/"[^\s]*)?|#([[:graph:]]{-}[[:upper:][:space:]])+ 
 %%
@@ -72,7 +73,7 @@ URI "http"("s")?"://"[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}("/"[^\s]*)?|#([[:graph:]]{-
 <styling>{FontFamily}                                                       {BEGIN(styling_ff); return FFTokenLexemeAction(createLexicalAnalyzerContext());}
 <styling>{Underline}                                                        {BEGIN(styling_bool); return UTokenLexemeAction(createLexicalAnalyzerContext());}
 <styling>{Position}                                                         {BEGIN(styling_position); return PTokenLexemeAction(createLexicalAnalyzerContext());}
-<styling_ff>{StylingString}                                                 {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
+<styling_ff>{Fonts}                                                         {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
 <styling_bool>{Boolean}                                                     {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
 <styling_position>{PositionValue}                                           {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
 <styling_size>{Size}                                                        {return StylingValueLexemeAction(createLexicalAnalyzerContext());}            

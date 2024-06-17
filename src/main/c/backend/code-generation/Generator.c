@@ -262,7 +262,9 @@ void _generateBlock(Block * block) {
 void _generateUnorderedList(List * list) {
     _output(0, "%s", "<ul");
     if(stylesToApply != NULL){
+        _output(0, "%s", " style=\"");
         _generateStyling(stylesToApply);
+        _output(0, "%s", "\"");
         stylesToApply = NULL;
     }
     _output(0, "%s", ">\n");
@@ -275,7 +277,9 @@ void _generateUnorderedList(List * list) {
 void _generateOrderedList(List * list) {
     _output(0, "%s", "<ol");
     if(stylesToApply != NULL){
+        _output(0, "%s", " style=\"");
         _generateStyling(stylesToApply);
+        _output(0, "%s", "\"");
         stylesToApply = NULL;
     }
     _output(0, "%s", ">\n");
@@ -301,7 +305,9 @@ void _generateList(List * list) {
 void _generateBlockQuote(Block * block) {
     _output(0, "%s", "<blockquote");
     if(stylesToApply != NULL){
+        _output(0, "%s", " style=\"");
         _generateStyling(stylesToApply);
+        _output(0, "%s", "\"");
         stylesToApply = NULL;
     }
     _output(0, "%s", ">\n");
@@ -318,7 +324,9 @@ void _generateHeader(Block * block, int level) {
     free(aux);
     if(stylesToApply != NULL){
         logDebugging(_logger, "Applying styles to header...");
+        _output(0, "%s", " style=\"");
         _generateStyling(stylesToApply);
+        _output(0, "%s", "\"");
         stylesToApply = NULL;
     }
     _output(0, "%s", ">\n");
@@ -332,7 +340,9 @@ void _generateHeader(Block * block, int level) {
 void _generateSimple(Block * block) {
     _output(0, "%s", "<p");
     if(stylesToApply != NULL){
+        _output(0, "%s", " style=\"");
         _generateStyling(stylesToApply);
+        _output(0, "%s", "\"");
         stylesToApply = NULL;
     }
     _output(0, "%s", ">\n");
@@ -411,7 +421,6 @@ void _generateStyle(Styling * style) {
     	case FF:
             _output(0, "%s", "font-family:");
             _output(0, "%s", style->string);
-            _output(0, "%s", ", sans-serif;");
             _output(0, "%s", ";");
             break;
 	    case FS:
@@ -440,7 +449,7 @@ void _generateStyle(Styling * style) {
             _output(0, "%s", "underline;");
             break;
 	    case P:
-            _output(0, "%s", "justify-content:");
+            _output(0, "%s", "text-align:");
             _output(0, "%s", style->string);
             _output(0, "%s", ";");
             break;
@@ -449,7 +458,6 @@ void _generateStyle(Styling * style) {
 
 void _generateStyling(StylingBlock * styling) {
     logDebugging(_logger, "Applying styling...");
-    _output(0, "%s", " style=\"");
     switch (styling->type)
     {
         case STYLING_BLOCK_LIST:
@@ -462,5 +470,5 @@ void _generateStyling(StylingBlock * styling) {
             _generateStyle(styling->styling);
             break;
     }
-    _output(0, "%s", "\"");
+    
 }
