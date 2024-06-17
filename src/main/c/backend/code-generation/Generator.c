@@ -353,7 +353,7 @@ void _generateSimple(Block * block) {
 }
 
 void _generatePrologue(){
-    file = fopen("output.html", "w");
+    file = fopen(OUTPUT_PATH, "w");
     if (file == NULL) {
         printf("Error opening file!\n");
         exit(1);

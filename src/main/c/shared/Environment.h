@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define OUTPUT_PATH "output.html"
+
 /**
  * Analog to "getStringOrDefault", but returning true if the string is exactly
  * "true"; false otherwise. The default value is only used when the variable
