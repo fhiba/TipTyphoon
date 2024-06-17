@@ -64,6 +64,7 @@ Token EndLinkLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
 Token BlockquoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 
+
 Token FirstOListLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token FirstListLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);
 Token SecondOListLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext);

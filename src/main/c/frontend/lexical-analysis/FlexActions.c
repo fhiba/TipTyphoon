@@ -226,8 +226,6 @@ Token BlockquoteLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext){
 	lexicalAnalyzerContext->semanticValue->token = BLOCKQUOTE_TOKEN;
 	return BLOCKQUOTE_TOKEN;
 }
-
-
 Token FirstOListLexemeAction(LexicalAnalyzerContext * lexicalAnalyzerContext) {
 	_logLexicalAnalyzerContext(__FUNCTION__, lexicalAnalyzerContext);
 	lexicalAnalyzerContext->semanticValue->integer = 1;

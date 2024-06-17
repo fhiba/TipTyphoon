@@ -50,17 +50,18 @@ Boolean true|false
 PositionValue left|right|center
 Size [0-9]+px
 EndStyling ";"
+Fonts Arial|Sans-serif|Serif|Monospace|Cursive|Fantasy
 StylingString \"([[:alnum:]]{+}[ ])+\"
 URI "http"("s")?"://"[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}("/"[^\s]*)?|#([[:graph:]]{-}[[:upper:][:space:]])+ 
 %%
 
-^{BlockQuote}                                                               {return BlockquoteLexemeAction(createLexicalAnalyzerContext());}
+^{BlockQuote}                                                               {return BlockquoteLexemeAction(createLexicalAnalyzerContext());}                                
 ^{List}                                                                     {return FirstListLexemeAction(createLexicalAnalyzerContext());}                               
 ^{OrderedList}                                                              {return FirstOListLexemeAction(createLexicalAnalyzerContext());}
 ^"    "{List}|(\t){List}|{List}                                            {return SecondListLexemeAction(createLexicalAnalyzerContext());}
 ^"    "{OrderedList}|(\t){OrderedList}                       {return SecondOListLexemeAction(createLexicalAnalyzerContext());}
-^"    "{2}{List}|(\t){2}{List}                                      {return ThirdListLexemeAction(createLexicalAnalyzerContext());}
-^"    "{3,}{OrderedList}|(\t){3,}{OrderedList}         {return ThirdOListLexemeAction(createLexicalAnalyzerContext());}
+^"    "{2,}{List}|(\t){2,}{List}                                      {return ThirdListLexemeAction(createLexicalAnalyzerContext());}
+^"    "{2,}{OrderedList}|(\t){2,}{OrderedList}         {return ThirdOListLexemeAction(createLexicalAnalyzerContext());}
 ^{comment}.*$                                                               {IgnoredLexemeAction(createLexicalAnalyzerContext());}
 ^{TipStyling}                                                               {BEGIN(styling); return BeginStylingLexemeAction(createLexicalAnalyzerContext());}
 <styling>{UnderlineColour}                                                  {BEGIN(styling_color); return UCTokenLexemeAction(createLexicalAnalyzerContext());}
@@ -76,7 +77,7 @@ URI "http"("s")?"://"[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}("/"[^\s]*)?|#([[:graph:]]{-
 <styling>{FontFamily}                                                       {BEGIN(styling_ff); return FFTokenLexemeAction(createLexicalAnalyzerContext());}
 <styling>{Underline}                                                        {BEGIN(styling_bool); return UTokenLexemeAction(createLexicalAnalyzerContext());}
 <styling>{Position}                                                         {BEGIN(styling_position); return PTokenLexemeAction(createLexicalAnalyzerContext());}
-<styling_ff>{StylingString}                                                 {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
+<styling_ff>{Fonts}                                                         {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
 <styling_bool>{Boolean}                                                     {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
 <styling_position>{PositionValue}                                           {return StylingValueLexemeAction(createLexicalAnalyzerContext());}
 <styling_size>{Size}                                                        {return StylingValueLexemeAction(createLexicalAnalyzerContext());}            

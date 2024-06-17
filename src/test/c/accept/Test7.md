@@ -1,3 +1,3 @@
 # Este es un test
-[//]: # "bg:blue; fc:white;"
+[//]: # "# bg:blue; fc:white;"
 # Que solo modifica algunas lineas

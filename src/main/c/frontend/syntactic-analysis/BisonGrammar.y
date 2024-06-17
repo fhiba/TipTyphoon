@@ -22,27 +22,6 @@
 	List * list;
 	Sublist * sublist;
 	StylingBlock * stylingBlock;
-	FirstTierItem * first_tier_item;
-	FirstTierNode * first_tier_node;
-	SecondTierItem * second_tier_item;
-	SecondTierNode * second_tier_node;
-	ThirdTierItem * third_tier_item;
-	ThirdTierNode * third_tier_node;
-	FirstTList * first_tier_list;
-	SecondTList * second_tier_list;
-	ThirdTList * third_tier_list;
-	FirstTNodeOrdered * first_tier_node_ordered;
-	FirstTNodeUnordered * first_tier_node_unordered;
-	SecondTNodeOrdered * second_tier_node_ordered;
-	SecondTNodeUnordered * second_tier_node_unordered;
-	ThirdTNodeOrdered * third_tier_node_ordered;
-	ThirdTNodeUnordered * third_tier_node_unordered;
-	FirstTItemOrdered * first_tier_item_ordered;
-	FirstTItemUnordered * first_tier_item_unordered;
-	SecondTItemOrdered * second_tier_item_ordered;
-	SecondTItemUnordered * second_tier_item_unordered;
-	ThirdTItemOrdered * third_tier_item_ordered;
-	ThirdTItemUnordered * third_tier_item_unordered;
 }
 
 /**
@@ -103,21 +82,7 @@
 %type <styling> styling
 %type <list> list
 %type <stylingBlock> stylingBlock
-%type <first_tier_list> first_tier_list
-%type <second_tier_list> second_tier_list
-%type <third_tier_list> third_tier_list
-%type <first_tier_item_ordered> first_tier_item_ordered
-%type <first_tier_item_unordered> first_tier_item_unordered
-%type <first_tier_node_ordered> first_tier_node_ordered
-%type <first_tier_node_unordered> first_tier_node_unordered
-%type <second_tier_item_ordered> second_tier_item_ordered
-%type <second_tier_item_unordered> second_tier_item_unordered
-%type <second_tier_node_ordered> second_tier_node_ordered
-%type <second_tier_node_unordered> second_tier_node_unordered
-%type <third_tier_item_ordered> third_tier_item_ordered
-%type <third_tier_item_unordered> third_tier_item_unordered
-%type <third_tier_node_ordered> third_tier_node_ordered
-%type <third_tier_node_unordered> third_tier_node_unordered
+
 
 %left WS
 %%
@@ -144,77 +109,25 @@ styling: FS_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction(
 	| P_TOKEN STYLING_VALUE END_STYLING_VALUE 		{$$ = StylingSemanticAction($2, P);}
 	;
 	
-block:  H1_TOKEN text							{$$ = HeaderBlockSemanticAction($2,1);}
-	| H2_TOKEN text    						{$$ = HeaderBlockSemanticAction($2,2);}
-	| H3_TOKEN text							{$$ = HeaderBlockSemanticAction($2,3);}
-	| H4_TOKEN text	    					{$$ = HeaderBlockSemanticAction($2,4);}
-	| H5_TOKEN text 							{$$ = HeaderBlockSemanticAction($2,5);}
-	| H6_TOKEN text 							{$$ = HeaderBlockSemanticAction($2,6);}
+block:  H1_TOKEN text							{$$ = HeaderBlockSemanticAction($2,H1);}
+	| H2_TOKEN text    						{$$ = HeaderBlockSemanticAction($2,H2);}
+	| H3_TOKEN text							{$$ = HeaderBlockSemanticAction($2,H3);}
+	| H4_TOKEN text	    					{$$ = HeaderBlockSemanticAction($2,H4);}
+	| H5_TOKEN text 							{$$ = HeaderBlockSemanticAction($2,H5);}
+	| H6_TOKEN text 							{$$ = HeaderBlockSemanticAction($2,H6);}
 	| BEGIN_STYLING stylingBlock END_STYLING	{$$ = BlockStylingBlockSemanticAction($2);}
 	| BLOCKQUOTE_TOKEN text					{$$ = BlockquoteBlockSemanticAction($2);}
 	| text                                     {$$ = TextBlockSemanticAction($1);}
-	| first_tier_list						{$$ = ListBlockSemanticAction($1);}
-	;
-
-first_tier_list: first_tier_node_ordered { $$ = FirstTierNodeOrderedListSemanticAction($1);}
-	| first_tier_node_unordered 	{$$ = FirstTierNodeUnorderedListSemanticAction($1);}
-	;
-
-first_tier_node_ordered: first_tier_item_ordered { $$ =ThirdTierNodeSemanticAction($1);};
-			| first_tier_node_ordered first_tier_item_ordered { $$ = UnionThirdTierNodeSemanticAction($1, $2);}
-			;
-
-first_tier_node_unordered: first_tier_item_unordered { $$ =ThirdTierNodeSemanticAction($1);};
-			| first_tier_node_unordered first_tier_item_unordered { $$ = UnionThirdTierNodeSemanticAction($1, $2);}
-			;
-
-
-first_tier_item_ordered: second_tier_list { $$ = SecondTierNodeToFirstTierItemSemanticAction($1);}
-	| FIRST_TIER_ITEM_ORDERED text				{$$ = FirstTierItemSemanticAction($2, OL);}
-	;
-first_tier_item_unordered: second_tier_list { $$ = SecondTierNodeToFirstTierItemSemanticAction($1);}
-	| FIRST_TIER_ITEM text				{$$ = FirstTierItemSemanticAction($2, UL);}
-	;
-
-second_tier_list : second_tier_node_ordered { $$ = SecondTierNodeOrderedListSemanticAction($1);}
-	| second_tier_node_unordered 	{$$ = SecondTierNodeUnorderedListSemanticAction($1);}
+	| list                                      {$$ = ListBlockSemanticAction($1);}
 	;
 
 
-
-second_tier_node_ordered: second_tier_item_ordered { $$ =SecondTierNodeSemanticAction($1);};
-			| second_tier_node_ordered second_tier_item_ordered { $$ = SecondTierNodeAppendSemanticAction($1, $2);}
-			;
-second_tier_node_unordered: second_tier_item_unordered { $$ =SecondTierNodeSemanticAction($1);};
-			| second_tier_node_unordered second_tier_item_unordered { $$ = SecondTierNodeAppendSemanticAction($1, $2);}
-			;
-
-second_tier_item_ordered: third_tier_list   { $$ = ThirdTierNodeToSecondTierItemSemanticAction($1);}
-	| SECOND_TIER_ITEM_ORDERED text				{$$ = SecondTierItemSemanticAction($2, OL);}
-	;
-second_tier_item_unordered: third_tier_list   { $$ = ThirdTierNodeToSecondTierItemSemanticAction($1);}
-	| SECOND_TIER_ITEM text			{$$ = SecondTierItemSemanticAction($2, UL);}
-	;
-
-third_tier_list: third_tier_node_ordered { $$ = ThirdTierNodeListSemanticAction($1);}
-	| third_tier_node_unordered 	{$$ = ThirdTierNodeListSemanticAction($1);}
-	;
-
-third_tier_node_ordered: third_tier_item_ordered { $$ =ThirdTierNodeSemanticAction($1);};
-			| third_tier_node_ordered third_tier_item_ordered { $$ = ThirdTierNodeAppendSemanticAction($1, $2);}
-			;
-third_tier_node_unordered: third_tier_item_unordered { $$ =ThirdTierNodeSemanticAction($1);};
-			| third_tier_node_ordered third_tier_item_unordered { $$ = ThirdTierNodeAppendSemanticAction($1, $2);}
-			;
-third_tier_item_ordered: THIRD_TIER_ITEM_ORDERED text				{$$ = ThirdTierItemSemanticAction($2, OL);}
-	;
-
-third_tier_item_unordered: THIRD_TIER_ITEM text			{$$ = ThirdTierItemSemanticAction($2, UL);}
-	;
-
-
-list: ORDERED_LIST text							{$$ = ListSemanticAction($1, $2, OL);}
-	| UNORDERED_LIST text						    {$$ = ListSemanticAction($1, $2, UL);}
+list: FIRST_TIER_ITEM text							{$$ = ListSemanticAction( $2, UL, DEPTH_1);}
+	| SECOND_TIER_ITEM text							{$$ = ListSemanticAction( $2, UL, DEPTH_2);}
+	| THIRD_TIER_ITEM text							{$$ = ListSemanticAction( $2, UL, DEPTH_3);}
+	| FIRST_TIER_ITEM_ORDERED text					{$$ = ListSemanticAction( $2, OL, DEPTH_1);}
+	| SECOND_TIER_ITEM_ORDERED text					{$$ = ListSemanticAction( $2, OL, DEPTH_2);}
+	| THIRD_TIER_ITEM_ORDERED text					{$$ = ListSemanticAction( $2, OL, DEPTH_3);}
 	;
 
 text: text WS text                              {$$ = UnionTextSemanticAction($1, $2, $3);}

@@ -42,9 +42,9 @@ LinkList * linkList;
 //primero guardo todos los headers y los links
 //luego recorro la lista de links chequeando que exista dentro de la lista de headers
 boolean checkProgram(MasterBlock * masterBlock) {
-    headerList = calloc(1,sizeof(HeaderList));
-    linkList = calloc(1,sizeof(LinkList));
-    boolean out = false;
+    headerList = NULL;
+    linkList = NULL;
+    boolean out = true;
     
     logDebugging(_logger, "Checking program for valid links...");
     while(masterBlock != NULL && masterBlock->type == MASTER_BLOCK_LIST) {
@@ -56,12 +56,11 @@ boolean checkProgram(MasterBlock * masterBlock) {
         checkBlock(masterBlock->block);
     }
     logDebugging(_logger, "Finished checking blocks...");
-    logDebugging(_logger, "ESTE ES MI HEADER %s...",headerList->header);
-    
-    out = checkLinks();
+    if(linkList != NULL)
+        out = checkLinks();
     freeHeaders(headerList);
     freeLinks(linkList);
-    logDebugging(_logger, "Finished checking program...");
+    logDebugging(_logger, "Finished checking program %s...", out ? "successfully" : "with errors");
     return out;
 }
 
@@ -95,14 +94,15 @@ boolean checkLinks(){
     LinkList * currentLink = linkList;
     HeaderList * currentHeader = headerList;
     logDebugging(_logger, "Checking Links...");
-    if(currentHeader->header == NULL){
-        logDebugging(_logger, "HeaderList is empty %s...",currentHeader->header);
+    if(currentHeader == NULL){
+        logDebugging(_logger, "HeaderList is empty...");
         return false;
     }
+    
     boolean found = false;
-    while(currentLink->next != NULL){
+    while(currentLink != NULL){
         logDebugging(_logger, "Checking link %s...",currentLink->link);
-        while(currentHeader->next != NULL){
+        while(currentHeader != NULL){
             logDebugging(_logger, "Checking header %s...",currentHeader->header);
             if(strcmp(currentLink->link, currentHeader->header) == 0){ //si en la lista lo encuentra, entonces dejo de recorrer los headers y paso al siguiente link
                 logDebugging(_logger, "Found header for link...");
@@ -124,8 +124,8 @@ boolean checkLinks(){
 }
 
 void freeHeaders(HeaderList * headers){
-    logDebugging(_logger, "Freeing Headers...");
     if(headers != NULL){
+        logDebugging(_logger, "Freeing Headers...");
         freeHeaders(headers->next);
         free(headers->header);
         free(headers);
@@ -133,8 +133,8 @@ void freeHeaders(HeaderList * headers){
 }
 
 void freeLinks(LinkList * links){
-    logDebugging(_logger, "Freeing Links...");
     if(links != NULL){
+        logDebugging(_logger, "Freeing Links...");
         freeLinks(links->next);
         free(links);
     }
@@ -161,155 +161,6 @@ void lookForLinksInText(Text * text) {
     }
 }
 
-void lookForLinksInThirdTList(ThirdTList *list) {
-    if(list == NULL) {
-        return;
-    }
-    switch (list->type)
-    {
-    case UL:
-        lookForLinksInThirdTNode(list->unordered);
-    case OL:
-        lookForLinksInThirdTNode(list->ordered);
-        break;
-    }
-}
-
-
-void lookForLinksInThirdTItem(void * item) {
-    if(item == NULL) {
-        return;
-    }
-
-    lookForLinksInText(((ThirdTItemOrdered*)item)->text);
-}
-
-void lookForLinksInThirdTNode(void * node) {
-    if(node == NULL) {
-        return;
-    }
-    switch (((ThirdTNodeOrdered*)node)->type)
-    {
-    case NODE:
-        lookForLinksInThirdTNode(((ThirdTNodeOrdered*)node)->node);
-        lookForLinksInThirdTItem(((ThirdTNodeOrdered*)node)->appended);
-        break;
-    case LEAF:
-        lookForLinksInThirdTItem(((ThirdTNodeOrdered*)node)->item);
-        break;
-    default:
-        logCritical(_logger, "Invalid ThirdTNode type");
-        break;
-    }
-}
-
-void lookForLinksInSecondTItem(void * item) {
-    if(item == NULL) {
-        return;
-    }
-    switch (((SecondTItemOrdered*)item)->type)
-    {
-    case ITEM:
-        lookForLinksInText(((SecondTItemOrdered*)item)->text);
-        break;
-    case LIST_ITEM:
-        lookForLinksInThirdTList(((SecondTItemOrdered*)item)->list);
-        break;
-    default:
-        logCritical(_logger, "Invalid FirstTItem type");
-        break;
-    }
-
-}
-
-
-void lookForLinksInSecondTNode(void * node) {
-    if(node == NULL) {
-        return;
-    }
-    switch (((SecondTNodeOrdered*)node)->type)
-    {
-    case NODE:
-        lookForLinksInSecondTNode(((SecondTNodeOrdered*)node)->node);
-        lookForLinksInSecondTItem(((SecondTNodeOrdered*)node)->appended);
-        break;
-    case LEAF:
-        lookForLinksInSecondTItem(((SecondTNodeOrdered*)node)->item);
-        break;
-    default:
-        logCritical(_logger, "Invalid SecondTNode type");
-        break;
-    }
-}
-
-
-void lookForLinksInSecondTList(SecondTList * list) {
-    if(list == NULL) {
-        return;
-    }
-    switch (list->type)
-    {
-    case UL:
-        lookForLinksInSecondTNode(list->unordered);
-    case OL:
-        lookForLinksInSecondTNode(list->ordered);
-        break;
-    }
-}
-
-void lookForLinksInFirstTItem(void * item) {
-    if(item == NULL) {
-        return;
-    }
-    switch (((FirstTItemOrdered*)item)->type)
-    {
-    case ITEM:
-        lookForLinksInText(((FirstTItemOrdered*)item)->text);
-        break;
-    case LIST_ITEM:
-        lookForLinksInSecondTList(((FirstTItemOrdered*)item)->list);
-        break;
-    default:
-        logCritical(_logger, "Invalid FirstTItem type");
-        break;
-    }
-
-}
-
-void lookForLinksInFirstTNode(void * node) {
-    if(node == NULL) {
-        return;
-    }
-    switch (((FirstTNodeOrdered*)node)->type)
-    {
-    case NODE:
-        lookForLinksInFirstTNode(((FirstTNodeOrdered*)node)->node);
-        lookForLinksInFirstTierItem(((FirstTNodeOrdered*)node)->appended);
-        break;
-    case LEAF:
-        lookForLinksInFirstTierItem(((FirstTNodeOrdered*)node)->item);
-        break;
-    default:
-        logCritical(_logger, "Invalid FirstTNode type");
-        break;
-    }
-}
-
-
-void lookForLinksInList(FirstTList * list) {
-    if(list == NULL) {
-        return;
-    }
-    switch (list->type)
-    {
-        case UL:
-            lookForLinksInFirstTNode(list->unordered);
-        case OL:
-            lookForLinksInFirstTNode(list->ordered);
-            break;
-    }
-}
-
 void lookForLinks(Block * block) {
     switch (block->type)
     {
@@ -318,7 +169,7 @@ void lookForLinks(Block * block) {
         lookForLinksInText(block->text);
         break;
     case LIST:
-        lookForLinksInList(block->list);
+        lookForLinksInText(block->list->content);
         break;
     }
 }
@@ -335,12 +186,12 @@ void checkBlock(Block * block) {
             logDebugging(_logger, "Processing Header...");
             storeHeader(processText(block->text));
             break;
-        case STYLING:
-            break;
         default:
-            logDebugging(_logger, "Looking for link in other type blocks...");
-            lookForLinks(block);
             break;
+    }
+    if(block->type != STYLING) {
+        logDebugging(_logger, "Processing all other blocks...");
+        lookForLinks(block);
     }
 }
 
@@ -416,4 +267,3 @@ char * processText(Text * text) {
 * si es un header tengo que procesarlo y guardarlo
 *
 */
-
