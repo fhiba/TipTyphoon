@@ -158,6 +158,7 @@ static void _output(const unsigned int indentationLevel, const char * const form
     char * indentation = _indentation(indentationLevel);
     char * effectiveFormat = concatenate(2, indentation, format);
     vfprintf(file, effectiveFormat, arguments);
+    fflush(file);
     free(effectiveFormat);
     free(indentation);
     va_end(arguments);
@@ -358,10 +359,7 @@ void _generateEpilogue(){
     _output(0, "%s", "</body>\n");
     _output(0, "%s", "</html>\n");
     fclose(file);
-    //open file
-    //write output to file
-    //close file
-    
+   
 }
 
 void _generateText(Text * text) {
@@ -450,7 +448,7 @@ void _generateStyle(Styling * style) {
 }
 
 void _generateStyling(StylingBlock * styling) {
-    logDebugging(_logger, "Applying style %s...",styling->type);
+    logDebugging(_logger, "Applying styling...");
     _output(0, "%s", " style=\"");
     switch (styling->type)
     {
@@ -461,7 +459,7 @@ void _generateStyling(StylingBlock * styling) {
             break;
         case STYLING_BLOCK:
             logDebugging(_logger, "Styling Block");
-            _generateStyle(styling->style);
+            _generateStyle(styling->styling);
             break;
     }
     _output(0, "%s", "\"");

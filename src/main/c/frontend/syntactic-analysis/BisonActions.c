@@ -194,6 +194,7 @@ Block * BlockquoteBlockSemanticAction(Text * text) {
 }
 
 StylingBlock * UnionStylingBlockSemanticAction(StylingBlock * block, Styling * styling){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
 	StylingBlock * out = calloc(1, sizeof(StylingBlock));
 	out->block = block;
 	out->styling = styling;
@@ -202,6 +203,7 @@ StylingBlock * UnionStylingBlockSemanticAction(StylingBlock * block, Styling * s
 }
 
 StylingBlock * StylingBlockSemanticAction(Styling * styling){
+	_logSyntacticAnalyzerAction(__FUNCTION__);
 	StylingBlock * out = calloc(1, sizeof(StylingBlock));
 	out->styling = styling;
 	out->type = STYLING_BLOCK;
